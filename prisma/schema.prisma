@@ -1,0 +1,173 @@
+// Prisma schema — SanShuzz & Ma-Shirts platform
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum StoreSection {
+  SANTUS_SABAOTH
+  SARTORIAL_EXECUTIVE
+}
+
+enum DailyPickType {
+  CLOTH
+  COLOR
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+model Product {
+  id          String       @id @default(cuid())
+  section     StoreSection
+  name        String
+  slug        String       @unique
+  brand       String?
+  category    String
+  price       Int
+  description String
+  images      String // JSON-encoded array of image URLs
+  sizes       String // JSON-encoded array of size strings
+  stock       Int          @default(0)
+  featured    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  orderItems OrderItem[]
+  dailyPicks DailyPick[]
+
+  @@index([section])
+}
+
+model GuideArticle {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String
+  coverImage  String?
+  category    String
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DailyPick {
+  id          String        @id @default(cuid())
+  type        DailyPickType
+  date        DateTime      @default(now())
+  title       String
+  description String
+  imageUrl    String?
+  colorHex    String?
+  productId   String?
+  product     Product?      @relation(fields: [productId], references: [id])
+  createdAt   DateTime      @default(now())
+
+  @@index([type, date])
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  reference    String      @unique
+  customerName String
+  email        String
+  phone        String
+  address      String
+  city         String
+  state        String
+  status       OrderStatus @default(PENDING)
+  subtotal     Int
+  total        Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Int
+  size      String?
+  quantity  Int
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model ServiceItem {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  price       Int
+  duration    String?
+  description String
+  features    String // JSON-encoded array of feature strings
+  bestFor     String
+  image       String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CaseFile {
+  id           String   @id @default(cuid())
+  caseNumber   String   @unique
+  slug         String   @unique
+  title        String
+  symptoms     String // JSON-encoded array of symptom strings
+  diagnosis    String
+  prescription String // JSON-encoded array of prescription strings
+  result       String
+  beforeImage  String?
+  afterImage   String?
+  tags         String // JSON-encoded array of tag strings
+  order        Int      @default(0)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String // JSON-encoded setting values
+  updatedAt DateTime @updatedAt
+}
+
+model CheckupSubmission {
+  id                 String   @id @default(cuid())
+  patientRef         String   @unique
+  name               String
+  email              String
+  phone              String
+  occupation         String?
+  industry           String?
+  workEnvironment    String?
+  chiefComplaint     String
+  diagnosis          String
+  prescription       String // JSON-encoded prescription strings
+  recommendedService String?
+  createdAt          DateTime @default(now())
+}
+

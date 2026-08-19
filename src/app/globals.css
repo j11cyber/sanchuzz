@@ -1,26 +1,240 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer base {
+  :root {
+    --font-display: "Fraunces", "Cormorant Garamond", "Playfair Display", Georgia, serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    --color-charcoal-950: #161513;
+    --color-charcoal-900: #1c1b18;
+    --color-charcoal-800: #26241f;
+    --color-charcoal-700: #34312a;
+
+    --color-navy-950: #070c1e;
+    --color-navy-900: #0b132b;
+    --color-navy-800: #1c2541;
+
+    --color-gold: #d4af5a;
+    --color-gold-soft: #e3c682;
+    --color-gold-dim: #a3813f;
+    --color-cream: #f2ead6;
+    --color-cream-dim: #e9e4d8;
+
+    --color-rx-green: #059669;
+    --color-rx-green-light: #10b981;
+    --color-rx-green-dim: #047857;
+    --color-rx-badge-bg: rgba(16, 185, 129, 0.12);
+    --color-rx-badge-border: rgba(16, 185, 129, 0.35);
+
+    --background: var(--color-charcoal-950);
+    --foreground: var(--color-cream-dim);
+
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.55);
+    --shadow-lift: 0 4px 10px rgba(0, 0, 0, 0.45), 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+    --shadow-gold: 0 8px 30px -10px rgba(212, 175, 90, 0.35);
+    --shadow-rx: 0 8px 30px -10px rgba(16, 185, 129, 0.25);
+  }
 }
 
 @theme inline {
+  --color-charcoal-950: var(--color-charcoal-950);
+  --color-charcoal-900: var(--color-charcoal-900);
+  --color-charcoal-800: var(--color-charcoal-800);
+  --color-charcoal-700: var(--color-charcoal-700);
+
+  --color-navy-950: var(--color-navy-950);
+  --color-navy-900: var(--color-navy-900);
+  --color-navy-800: var(--color-navy-800);
+
+  --color-gold: var(--color-gold);
+  --color-gold-soft: var(--color-gold-soft);
+  --color-gold-dim: var(--color-gold-dim);
+  --color-cream: var(--color-cream);
+  --color-cream-dim: var(--color-cream-dim);
+
+  --color-rx-green: var(--color-rx-green);
+  --color-rx-green-light: var(--color-rx-green-light);
+  --color-rx-green-dim: var(--color-rx-green-dim);
+  --color-rx-badge-bg: var(--color-rx-badge-bg);
+  --color-rx-badge-border: var(--color-rx-badge-border);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --font-serif: var(--font-display);
+  --font-sans: var(--font-body);
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+  --shadow-gold: var(--shadow-gold);
+  --shadow-rx: var(--shadow-rx);
+
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-fade-in: fade-in 0.9s ease forwards;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--color-charcoal-700);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-charcoal-950);
+}
+
+/* Scroll-reveal primitives */
+.reveal-container {
+  perspective: 1400px;
+}
+
+.reveal,
+.reveal-3d,
+.reveal-left,
+.reveal-right,
+.reveal-scale {
+  opacity: 0;
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.reveal {
+  transform: translateY(28px);
+}
+.reveal-3d {
+  transform: perspective(1400px) translateY(46px) rotateX(14deg);
+  transform-origin: bottom center;
+}
+.reveal-left {
+  transform: translateX(-40px) rotateY(8deg);
+}
+.reveal-right {
+  transform: translateX(40px) rotateY(-8deg);
+}
+.reveal-scale {
+  transform: scale(0.92) translateY(20px);
+}
+
+.reveal.is-visible,
+.reveal-3d.is-visible,
+.reveal-left.is-visible,
+.reveal-right.is-visible,
+.reveal-scale.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-3d,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Page-level enter transition */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-transition {
+  animation: page-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    animation: none;
+  }
+}
+
+/* Horizontal snap carousels */
+.snap-row {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-left: 1.25rem;
+}
+.snap-row > * {
+  scroll-snap-align: start;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Thin gold scrollbar for chat widget etc. */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-gold-dim);
+  border-radius: 999px;
+}
+
+/* Prescription Pad & Clinical Document Styling */
+.rx-watermark {
+  background-image: radial-gradient(circle at center, rgba(212, 175, 90, 0.04) 0%, transparent 70%);
+}
+
+.prescription-grid {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(212, 175, 90, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(212, 175, 90, 0.05) 1px, transparent 1px);
 }
