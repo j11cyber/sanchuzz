@@ -88,7 +88,25 @@ export async function POST(request: Request) {
     },
   });
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : new URL(request.url).origin);
+
+  if (!process.env.PAYSTACK_SECRET_KEY) {
+    return NextResponse.json(
+      {
+        error:
+          "Online checkout is temporarily pending gateway key activation. Your order reference is " +
+          reference +
+          ". Please contact concierge on WhatsApp or phone to finalize your order directly.",
+      },
+      { status: 503 },
+    );
+  }
 
   try {
     const transaction = await initializeTransaction({

@@ -1,8 +1,12 @@
 const PAYSTACK_BASE = "https://api.paystack.co";
 
+export function isPaystackConfigured(): boolean {
+  return Boolean(process.env.PAYSTACK_SECRET_KEY);
+}
+
 function secretKey() {
   const key = process.env.PAYSTACK_SECRET_KEY;
-  if (!key) throw new Error("PAYSTACK_SECRET_KEY is not set");
+  if (!key) throw new Error("PAYSTACK_SECRET_KEY is not configured on this deployment");
   return key;
 }
 

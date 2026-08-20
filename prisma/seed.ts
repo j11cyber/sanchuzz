@@ -1,10 +1,22 @@
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
+if (!process.env.DATABASE_URL) {
+  try {
+    if (typeof process.loadEnvFile === "function") {
+      process.loadEnvFile(".env");
+    }
+  } catch {
+    // Ignore error if already loaded or file missing
+  }
+}
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
 });
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 const IMG = (seed: string) => `https://picsum.photos/seed/${seed}/900/1100`;
@@ -305,25 +317,35 @@ async function main() {
   const clothProduct = await prisma.product.findUnique({
     where: { slug: "obsidian-tailored-blazer" },
   });
-  await prisma.dailyPick.create({
-    data: {
-      type: "CLOTH",
-      title: "Obsidian Tailored Blazer",
-      description:
-        "Today's pick pairs the Obsidian Blazer with charcoal trousers and a pale-blue Oxford shirt for a boardroom-to-dinner transition.",
-      imageUrl: IMG("santus-blazer-1"),
-      productId: clothProduct?.id,
-    },
+  const existingClothPick = await prisma.dailyPick.findFirst({
+    where: { type: "CLOTH", title: "Obsidian Tailored Blazer" },
   });
-  await prisma.dailyPick.create({
-    data: {
-      type: "COLOR",
-      title: "Burnt Umber",
-      description:
-        "A warm, grounded brown that flatters most undertones — wear it as a knit layer under charcoal or navy for depth without shouting.",
-      colorHex: "#7A4B2A",
-    },
+  if (!existingClothPick) {
+    await prisma.dailyPick.create({
+      data: {
+        type: "CLOTH",
+        title: "Obsidian Tailored Blazer",
+        description:
+          "Today's pick pairs the Obsidian Blazer with charcoal trousers and a pale-blue Oxford shirt for a boardroom-to-dinner transition.",
+        imageUrl: IMG("santus-blazer-1"),
+        productId: clothProduct?.id,
+      },
+    });
+  }
+  const existingColorPick = await prisma.dailyPick.findFirst({
+    where: { type: "COLOR", title: "Burnt Umber" },
   });
+  if (!existingColorPick) {
+    await prisma.dailyPick.create({
+      data: {
+        type: "COLOR",
+        title: "Burnt Umber",
+        description:
+          "A warm, grounded brown that flatters most undertones — wear it as a knit layer under charcoal or navy for depth without shouting.",
+        colorHex: "#7A4B2A",
+      },
+    });
+  }
 
   console.log("Seeding admin user...");
   const passwordHash = await bcrypt.hash(santusAdmin.password, 10);
@@ -432,7 +454,7 @@ async function main() {
   for (const s of servicesList) {
     await prisma.serviceItem.upsert({
       where: { slug: s.slug },
-      update: s,
+      update: {},
       create: s,
     });
   }
@@ -557,7 +579,7 @@ async function main() {
   for (const c of caseFilesList) {
     await prisma.caseFile.upsert({
       where: { caseNumber: c.caseNumber },
-      update: c,
+      update: {},
       create: c,
     });
   }
@@ -601,7 +623,7 @@ async function main() {
   for (const s of defaultSettings) {
     await prisma.siteSetting.upsert({
       where: { key: s.key },
-      update: s,
+      update: {},
       create: s,
     });
   }
