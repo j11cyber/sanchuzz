@@ -2,9 +2,17 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { initializeTransaction } from "@/lib/paystack";
+import { brandForSection, brandHref, type StoreSection } from "@/lib/brands";
 
 type CheckoutItem = { productId: string; size: string | null; quantity: number };
 
+const SECTIONS: StoreSection[] = ["SANTUS_SABAOTH", "SARTORIAL_EXECUTIVE"];
+
+/**
+ * Product checkout for either selling brand. The server recomputes every
+ * price and stock level from the database and never trusts client totals.
+ * Phase 4 adds the service-deposit flow alongside this one.
+ */
 export async function POST(request: Request) {
   let body: {
     customerName?: string;
@@ -13,6 +21,7 @@ export async function POST(request: Request) {
     address?: string;
     city?: string;
     state?: string;
+    section?: string;
     items?: CheckoutItem[];
   };
 
@@ -25,13 +34,17 @@ export async function POST(request: Request) {
   const { customerName, email, phone, address, city, state, items } = body;
 
   if (!customerName || !email || !phone || !address || !city || !state) {
-    return NextResponse.json({ error: "Missing required customer details" }, { status: 400 });
+    return NextResponse.json({ error: "Please fill in your name, contact and delivery details." }, { status: 400 });
   }
   if (!items || items.length === 0) {
-    return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    return NextResponse.json({ error: "Your bag is empty." }, { status: 400 });
   }
+  if (!body.section || !SECTIONS.includes(body.section as StoreSection)) {
+    return NextResponse.json({ error: "Unknown storefront." }, { status: 400 });
+  }
+  const section = body.section as StoreSection;
+  const brand = brandForSection(section);
 
-  // Server recomputes totals from the database — never trust client-submitted prices.
   const productIds = items.map((i) => i.productId);
   const products = await prisma.product.findMany({ where: { id: { in: productIds } } });
   const productMap = new Map(products.map((p) => [p.id, p]));
@@ -40,16 +53,16 @@ export async function POST(request: Request) {
   for (const item of items) {
     const product = productMap.get(item.productId);
     if (!product) {
-      return NextResponse.json({ error: `Product not found: ${item.productId}` }, { status: 400 });
+      return NextResponse.json({ error: "One of the pieces in your bag is no longer available." }, { status: 400 });
     }
-    if (item.quantity < 1) {
-      return NextResponse.json({ error: "Invalid quantity" }, { status: 400 });
+    if (product.section !== section) {
+      return NextResponse.json({ error: `${product.name} belongs to a different storefront.` }, { status: 400 });
+    }
+    if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+      return NextResponse.json({ error: "Invalid quantity." }, { status: 400 });
     }
     if (product.stock < item.quantity) {
-      return NextResponse.json(
-        { error: `${product.name} does not have enough stock` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: `Only ${product.stock} of ${product.name} left in stock.` }, { status: 400 });
     }
     lineItems.push({
       productId: product.id,
@@ -62,7 +75,8 @@ export async function POST(request: Request) {
 
   const subtotal = lineItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const total = subtotal;
-  const reference = `SNZ-${Date.now()}-${randomUUID().slice(0, 8)}`;
+  const prefix = section === "SANTUS_SABAOTH" ? "SSB" : "SEX";
+  const reference = `${prefix}-${Date.now()}-${randomUUID().slice(0, 8)}`;
 
   const order = await prisma.order.create({
     data: {
@@ -93,16 +107,13 @@ export async function POST(request: Request) {
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : new URL(request.url).origin);
+        ? `https://${process.env.VERCEL_URL}`
+        : new URL(request.url).origin);
 
   if (!process.env.PAYSTACK_SECRET_KEY) {
     return NextResponse.json(
       {
-        error:
-          "Online checkout is temporarily pending gateway key activation. Your order reference is " +
-          reference +
-          ". Please contact concierge on WhatsApp or phone to finalize your order directly.",
+        error: `Online payment is not switched on yet. Your order reference is ${reference}. Message us on WhatsApp to complete it.`,
       },
       { status: 503 },
     );
@@ -113,8 +124,8 @@ export async function POST(request: Request) {
       email,
       amountNaira: total,
       reference,
-      callbackUrl: `${siteUrl}/order-confirmation`,
-      metadata: { orderId: order.id },
+      callbackUrl: `${siteUrl}${brandHref(brand, "/order-confirmation")}`,
+      metadata: { orderId: order.id, section },
     });
     return NextResponse.json({ authorizationUrl: transaction.authorization_url });
   } catch (err) {

@@ -67,7 +67,7 @@ export async function upsertCaseFileAction(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath("/case-files");
+  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/case-files");
   revalidatePath("/admin/case-files");
   redirect("/admin/case-files");
 }
@@ -79,7 +79,7 @@ export async function deleteCaseFileAction(id: string) {
   await prisma.caseFile.delete({ where: { id } });
 
   revalidatePath("/");
-  revalidatePath("/case-files");
+  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/case-files");
   revalidatePath("/admin/case-files");
 }
 
@@ -93,6 +93,6 @@ export async function toggleCaseFileActiveAction(id: string, active: boolean) {
   });
 
   revalidatePath("/");
-  revalidatePath("/case-files");
+  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/case-files");
   revalidatePath("/admin/case-files");
 }

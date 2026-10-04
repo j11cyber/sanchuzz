@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { serializeProduct } from "@/lib/products";
 import { getActiveServices } from "@/lib/services";
 import { getActiveCaseFiles } from "@/lib/case-files";
+import { BRANDS, brandHref, productHref, type StoreSection } from "@/lib/brands";
 
 export type SearchResult = {
   id: string;
@@ -22,14 +23,13 @@ export async function searchSite(query: string): Promise<SearchResult[]> {
   const results: SearchResult[] = [];
 
   try {
-    // 1. Search Products
     const products = await prisma.product.findMany({
       where: {
         OR: [
-          { name: { contains: q } },
-          { description: { contains: q } },
-          { category: { contains: q } },
-          { brand: { contains: q } },
+          { name: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
+          { category: { contains: q, mode: "insensitive" } },
+          { brand: { contains: q, mode: "insensitive" } },
         ],
       },
       take: 6,
@@ -37,20 +37,20 @@ export async function searchSite(query: string): Promise<SearchResult[]> {
 
     for (const p of products) {
       const sp = serializeProduct(p);
+      const section = p.section as StoreSection;
       results.push({
         id: `prod-${p.id}`,
         type: "product",
         title: p.name,
         subtitle: p.brand ? `${p.brand} · ${p.category}` : p.category,
-        description: p.description.slice(0, 120) + "...",
-        href: `/${p.section === "SANTUS_SABAOTH" ? "santus-sabaoth" : "sartorial-executive"}/${p.slug}`,
-        badge: "Product",
+        description: p.description.slice(0, 120) + "…",
+        href: productHref(section, p.slug),
+        badge: section === "SANTUS_SABAOTH" ? "Santus Sabaoth" : "Sartorial Executive",
         image: sp.images[0] || null,
         price: p.price,
       });
     }
 
-    // 2. Search Services
     const services = await getActiveServices();
     const matchedServices = services.filter(
       (s) =>
@@ -65,16 +65,15 @@ export async function searchSite(query: string): Promise<SearchResult[]> {
         id: `srv-${s.id}`,
         type: "service",
         title: s.name,
-        subtitle: s.duration || "Clinical Service",
+        subtitle: s.duration || "Treatment",
         description: s.description,
-        href: `/services#${s.slug}`,
-        badge: "Service",
+        href: brandHref(BRANDS.sartorial, `/services/${s.slug}`),
+        badge: "Treatment",
         image: s.image,
         price: s.price,
       });
     }
 
-    // 3. Search Case Files
     const caseFiles = await getActiveCaseFiles();
     const matchedCases = caseFiles.filter(
       (c) =>
@@ -88,24 +87,23 @@ export async function searchSite(query: string): Promise<SearchResult[]> {
       results.push({
         id: `case-${c.id}`,
         type: "case-file",
-        title: `Case #${c.caseNumber}: ${c.title}`,
-        subtitle: "Case Study",
+        title: `Case file #${c.caseNumber}: ${c.title}`,
+        subtitle: "Case file",
         description: c.diagnosis,
-        href: `/case-files#case-${c.caseNumber}`,
-        badge: "Case File",
+        href: brandHref(BRANDS.sartorial, `/case-files#case-${c.caseNumber}`),
+        badge: "Case file",
         image: c.afterImage || c.beforeImage,
       });
     }
 
-    // 4. Search Guide Articles
     const articles = await prisma.guideArticle.findMany({
       where: {
         published: true,
         OR: [
-          { title: { contains: q } },
-          { excerpt: { contains: q } },
-          { content: { contains: q } },
-          { category: { contains: q } },
+          { title: { contains: q, mode: "insensitive" } },
+          { excerpt: { contains: q, mode: "insensitive" } },
+          { content: { contains: q, mode: "insensitive" } },
+          { category: { contains: q, mode: "insensitive" } },
         ],
       },
       take: 4,
@@ -116,10 +114,10 @@ export async function searchSite(query: string): Promise<SearchResult[]> {
         id: `art-${a.id}`,
         type: "guide",
         title: a.title,
-        subtitle: `Aftercare · ${a.category}`,
+        subtitle: `Guide · ${a.category}`,
         description: a.excerpt,
         href: `/guide/${a.slug}`,
-        badge: "Aftercare Guide",
+        badge: "Guide",
         image: a.coverImage,
       });
     }

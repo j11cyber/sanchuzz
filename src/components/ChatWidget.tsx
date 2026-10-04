@@ -8,9 +8,10 @@ type Message = { role: "user" | "assistant"; content: string };
 const STARTER: Message = {
   role: "assistant",
   content:
-    "Welcome to The Fashion Clinic. I'm your digital Sartorial Consultant. Whether you have a fit problem, need dress-code triage, or want guidance on our clinical styling services and prescriptions, how may I assist you today?",
+    "Welcome to SanShuzz & Ma-Shirts. Ask me about caring for your clothes, shoes and bags, or about Santus Sabaoth and Sartorial Executive.",
 };
 
+/** Floating guide assistant. Lives on the house site; both brands link back to the Guide. */
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([STARTER]);
@@ -37,11 +38,11 @@ export default function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next.filter((m) => m !== STARTER) }),
       });
-      if (!res.ok) throw new Error("The consultation assistant is unavailable right now.");
+      if (!res.ok) throw new Error("unavailable");
       const data = await res.json();
       setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
     } catch {
-      setError("The clinic assistant is currently occupied. You can book an Executive Checkup directly or explore our Case Files.");
+      setError("The assistant is unavailable right now. The Guide has the answers to most care questions.");
     } finally {
       setLoading(false);
     }
@@ -50,99 +51,87 @@ export default function ChatWidget() {
   return (
     <div className="fixed bottom-5 right-5 z-40 sm:bottom-7 sm:right-7">
       {open && (
-        <div className="mb-4 flex h-[28rem] w-[20rem] flex-col overflow-hidden rounded-2xl border border-charcoal-700 bg-charcoal-900 shadow-lift sm:w-[22rem]">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-charcoal-800 bg-navy-950 px-4 py-3">
+        <div
+          className="mb-4 flex h-[28rem] w-[calc(100vw-2.5rem)] max-w-[22rem] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-lift"
+          role="dialog"
+          aria-label="Guide assistant"
+        >
+          <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <div>
-              <div className="flex items-center gap-1.5 font-display text-sm text-cream">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                Clinic Sartorial Consultant
-              </div>
-              <div className="text-[10px] text-cream-dim/60">Style Diagnosis &amp; Prescriptions</div>
+              <div className="font-display text-base text-fg">Guide assistant</div>
+              <Link href="/guide" className="text-xs text-fg-muted/60 hover:text-accent">
+                Browse the Guide
+              </Link>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              aria-label="Close consultation chat"
-              className="text-cream-dim/70 hover:text-gold"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <button onClick={() => setOpen(false)} aria-label="Close assistant" className="text-fg-muted/60 hover:text-fg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
           </div>
 
-          {/* Messages */}
-          <div ref={scrollRef} className="thin-scrollbar flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          <div ref={scrollRef} className="thin-scrollbar flex-1 space-y-3 overflow-y-auto px-4 py-3">
             {messages.map((m, i) => (
-              <div
-                key={i}
-                className={`max-w-[88%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
-                  m.role === "user"
-                    ? "ml-auto bg-gold text-charcoal-950 font-medium"
-                    : "bg-charcoal-800 text-cream-dim border border-charcoal-700/50"
-                }`}
-              >
-                {m.content}
+              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                    m.role === "user" ? "bg-accent text-bg" : "bg-bg text-fg-muted"
+                  }`}
+                >
+                  {m.content}
+                </div>
               </div>
             ))}
-            {loading && (
-              <div className="max-w-[75%] rounded-xl bg-charcoal-800 px-3.5 py-2.5 text-xs text-cream-dim/60">
-                Formulating diagnosis&hellip;
-              </div>
-            )}
+            {loading && <div className="text-xs text-fg-muted/50">Thinking…</div>}
             {error && (
-              <div className="rounded-lg bg-red-950/40 p-2.5 text-xs text-red-300 border border-red-800/40">
-                {error}
-                <div className="mt-2">
-                  <Link
-                    href="/executive-checkup"
-                    onClick={() => setOpen(false)}
-                    className="underline text-gold hover:text-gold-soft"
-                  >
-                    Take online checkup →
-                  </Link>
-                </div>
+              <div className="text-xs text-fg-muted/70">
+                {error}{" "}
+                <Link href="/guide" className="text-accent underline underline-offset-4">
+                  Open the Guide
+                </Link>
               </div>
             )}
           </div>
 
-          {/* Input */}
-          <div className="flex items-center gap-2 border-t border-charcoal-800 p-3 bg-charcoal-950">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              send();
+            }}
+            className="flex items-center gap-2 border-t border-line p-3"
+          >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Ask about fit, services, dress codes..."
-              className="flex-1 rounded-full border border-charcoal-700 bg-charcoal-900 px-3.5 py-2 text-xs text-cream placeholder:text-cream-dim/40 focus:border-gold focus:outline-none"
+              placeholder="Ask about suit care, leather, fit…"
+              aria-label="Your question"
+              className="flex-1 rounded-full border border-line bg-bg px-4 py-2 text-sm text-fg placeholder:text-fg-muted/40 focus:border-accent focus:outline-none"
             />
             <button
-              onClick={send}
+              type="submit"
               disabled={loading || !input.trim()}
-              className="rounded-full bg-gold px-3.5 py-2 text-xs font-semibold text-charcoal-950 transition hover:bg-gold-soft disabled:opacity-40"
+              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-bg transition hover:bg-accent-soft disabled:opacity-40"
             >
-              Consult
+              Send
             </button>
-          </div>
+          </form>
         </div>
       )}
 
-      {/* Floating Trigger Button */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-gold text-charcoal-950 shadow-gold transition hover:scale-105"
-        aria-label="Open clinic assistant"
+        aria-expanded={open}
+        aria-label={open ? "Close guide assistant" : "Open guide assistant"}
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-bg shadow-lift transition hover:bg-accent-soft"
       >
         {open ? (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         ) : (
-          <div className="flex flex-col items-center justify-center">
-            <span className="text-[10px] font-black tracking-tighter">Rx</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="-mt-1">
-              <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H3l2.2-3.7A8.5 8.5 0 1 1 21 11.5z" />
-            </svg>
-          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <path d="M4 5h16v10H8l-4 4V5z" />
+          </svg>
         )}
       </button>
     </div>

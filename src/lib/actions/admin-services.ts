@@ -60,7 +60,7 @@ export async function upsertServiceAction(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath("/services");
+  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/services");
   revalidatePath("/admin/services");
   redirect("/admin/services");
 }
@@ -72,7 +72,7 @@ export async function deleteServiceAction(id: string) {
   await prisma.serviceItem.delete({ where: { id } });
 
   revalidatePath("/");
-  revalidatePath("/services");
+  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/services");
   revalidatePath("/admin/services");
 }
 
@@ -86,6 +86,6 @@ export async function toggleServiceActiveAction(id: string, active: boolean) {
   });
 
   revalidatePath("/");
-  revalidatePath("/services");
+  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/services");
   revalidatePath("/admin/services");
 }

@@ -1,65 +1,108 @@
 @import "tailwindcss";
 
+/*
+  Brand tokens.
+
+  Every brand sets the same set of --brand-* variables on its route-group
+  wrapper via [data-brand="..."]. Tailwind utilities below read those, so a
+  component written once renders correctly inside any brand. Gold runs through
+  all three so they read as one family.
+
+  Fonts: --font-display and --font-body are provided by next/font in each
+  brand layout. The values here are only fallbacks.
+*/
 @layer base {
+  :root,
+  [data-brand="house"] {
+    --brand-bg: #161513;
+    --brand-bg-2: #1c1b18;
+    --brand-bg-3: #26241f;
+    --brand-line: #34312a;
+    --brand-deep: #0f0e0c;
+    --brand-fg: #f2ead6;
+    --brand-fg-muted: #e9e4d8;
+    --brand-accent: #d4af5a;
+    --brand-accent-soft: #e3c682;
+    --brand-accent-dim: #a3813f;
+    --brand-mark: #2a9d8f;
+
+    --font-display: "Cormorant Garamond", Georgia, serif;
+    --font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* Santus Sabaoth: the maker's atelier. Espresso, warm cream, bronze, stone. */
+  [data-brand="santus"] {
+    --brand-bg: #1c1b18;
+    --brand-bg-2: #24221d;
+    --brand-bg-3: #2e2b25;
+    --brand-line: #3b372f;
+    --brand-deep: #141310;
+    --brand-fg: #f2ead6;
+    --brand-fg-muted: #cfc6b4;
+    --brand-accent: #d4af5a;
+    --brand-accent-soft: #e3c682;
+    --brand-accent-dim: #8c6a43;
+    --brand-mark: #8c6a43;
+  }
+
+  /* Sartorial Executive: the clinic. Ink, surgical navy, ivory, executive gold, Rx green for marks only. */
+  [data-brand="sartorial"] {
+    --brand-bg: #0e1a2b;
+    --brand-bg-2: #0a2342;
+    --brand-bg-3: #132c50;
+    --brand-line: #1e3a5f;
+    --brand-deep: #081220;
+    --brand-fg: #f7f4ec;
+    --brand-fg-muted: #d7d2c5;
+    --brand-accent: #c9a24b;
+    --brand-accent-soft: #dcbd73;
+    --brand-accent-dim: #9d7d35;
+    --brand-mark: #2a9d8f;
+  }
+
   :root {
-    --font-display: "Fraunces", "Cormorant Garamond", "Playfair Display", Georgia, serif;
-    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-
-    --color-charcoal-950: #161513;
-    --color-charcoal-900: #1c1b18;
-    --color-charcoal-800: #26241f;
-    --color-charcoal-700: #34312a;
-
-    --color-navy-950: #070c1e;
-    --color-navy-900: #0b132b;
-    --color-navy-800: #1c2541;
-
-    --color-gold: #d4af5a;
-    --color-gold-soft: #e3c682;
-    --color-gold-dim: #a3813f;
-    --color-cream: #f2ead6;
-    --color-cream-dim: #e9e4d8;
-
-    --color-rx-green: #059669;
-    --color-rx-green-light: #10b981;
-    --color-rx-green-dim: #047857;
-    --color-rx-badge-bg: rgba(16, 185, 129, 0.12);
-    --color-rx-badge-border: rgba(16, 185, 129, 0.35);
-
-    --background: var(--color-charcoal-950);
-    --foreground: var(--color-cream-dim);
-
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.55);
     --shadow-lift: 0 4px 10px rgba(0, 0, 0, 0.45), 0 20px 40px -12px rgba(0, 0, 0, 0.6);
-    --shadow-gold: 0 8px 30px -10px rgba(212, 175, 90, 0.35);
-    --shadow-rx: 0 8px 30px -10px rgba(16, 185, 129, 0.25);
+    --shadow-gold: 0 8px 30px -10px color-mix(in srgb, var(--brand-accent) 35%, transparent);
+    --shadow-rx: 0 8px 30px -10px color-mix(in srgb, var(--brand-mark) 25%, transparent);
   }
 }
 
 @theme inline {
-  --color-charcoal-950: var(--color-charcoal-950);
-  --color-charcoal-900: var(--color-charcoal-900);
-  --color-charcoal-800: var(--color-charcoal-800);
-  --color-charcoal-700: var(--color-charcoal-700);
+  /* Semantic names. Prefer these in new code. */
+  --color-bg: var(--brand-bg);
+  --color-surface: var(--brand-bg-2);
+  --color-surface-2: var(--brand-bg-3);
+  --color-line: var(--brand-line);
+  --color-deep: var(--brand-deep);
+  --color-fg: var(--brand-fg);
+  --color-fg-muted: var(--brand-fg-muted);
+  --color-accent: var(--brand-accent);
+  --color-accent-soft: var(--brand-accent-soft);
+  --color-accent-dim: var(--brand-accent-dim);
+  --color-mark: var(--brand-mark);
 
-  --color-navy-950: var(--color-navy-950);
-  --color-navy-900: var(--color-navy-900);
-  --color-navy-800: var(--color-navy-800);
-
-  --color-gold: var(--color-gold);
-  --color-gold-soft: var(--color-gold-soft);
-  --color-gold-dim: var(--color-gold-dim);
-  --color-cream: var(--color-cream);
-  --color-cream-dim: var(--color-cream-dim);
-
-  --color-rx-green: var(--color-rx-green);
-  --color-rx-green-light: var(--color-rx-green-light);
-  --color-rx-green-dim: var(--color-rx-green-dim);
-  --color-rx-badge-bg: var(--color-rx-badge-bg);
-  --color-rx-badge-border: var(--color-rx-badge-border);
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Legacy aliases kept so pages written for the clinic-era palette keep
+     working inside every brand. Remove as pages are refaced. */
+  --color-charcoal-950: var(--brand-bg);
+  --color-charcoal-900: var(--brand-bg-2);
+  --color-charcoal-800: var(--brand-bg-3);
+  --color-charcoal-700: var(--brand-line);
+  --color-navy-950: var(--brand-deep);
+  --color-navy-900: var(--brand-bg-2);
+  --color-navy-800: var(--brand-bg-3);
+  --color-gold: var(--brand-accent);
+  --color-gold-soft: var(--brand-accent-soft);
+  --color-gold-dim: var(--brand-accent-dim);
+  --color-cream: var(--brand-fg);
+  --color-cream-dim: var(--brand-fg-muted);
+  --color-rx-green: var(--brand-mark);
+  --color-rx-green-light: var(--brand-mark);
+  --color-rx-green-dim: var(--brand-mark);
+  --color-emerald-400: var(--brand-mark);
+  --color-emerald-500: var(--brand-mark);
+  --color-emerald-600: var(--brand-mark);
 
   --font-serif: var(--font-display);
   --font-sans: var(--font-body);
@@ -93,7 +136,7 @@
 }
 
 * {
-  border-color: var(--color-charcoal-700);
+  border-color: var(--brand-line);
 }
 
 html {
@@ -101,9 +144,18 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--brand-bg);
+  color: var(--brand-fg-muted);
+  font-family: var(--font-body);
+}
+
+/* Each brand wrapper paints its own background so the switch between brands is total. */
+[data-brand] {
+  background: var(--brand-bg);
+  color: var(--brand-fg-muted);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 h1,
@@ -111,20 +163,25 @@ h2,
 h3,
 h4,
 .font-display {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display);
   letter-spacing: -0.01em;
 }
 
+.font-mono {
+  font-family: var(--font-mono);
+}
+
 ::selection {
-  background: var(--color-gold);
-  color: var(--color-charcoal-950);
+  background: var(--brand-accent);
+  color: var(--brand-bg);
 }
 
-/* Scroll-reveal primitives */
-.reveal-container {
-  perspective: 1400px;
+:focus-visible {
+  outline: 2px solid var(--brand-accent);
+  outline-offset: 2px;
 }
 
+/* Scroll-reveal primitives (to be reduced in the facelift phases) */
 .reveal,
 .reveal-3d,
 .reveal-left,
@@ -218,23 +275,33 @@ h4,
   display: none;
 }
 
-/* Thin gold scrollbar for chat widget etc. */
 .thin-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 .thin-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-gold-dim);
+  background: var(--brand-accent-dim);
   border-radius: 999px;
 }
 
-/* Prescription Pad & Clinical Document Styling */
+/* Clinical document styling (Sartorial Executive) */
 .rx-watermark {
-  background-image: radial-gradient(circle at center, rgba(212, 175, 90, 0.04) 0%, transparent 70%);
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--brand-accent) 4%, transparent) 0%,
+    transparent 70%
+  );
 }
 
-.prescription-grid {
-  background-size: 20px 20px;
-  background-image: 
-    linear-gradient(to right, rgba(212, 175, 90, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(212, 175, 90, 0.05) 1px, transparent 1px);
+@media print {
+  header,
+  footer,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  body,
+  [data-brand] {
+    background: #fff !important;
+    color: #000 !important;
+  }
 }

@@ -26,7 +26,6 @@ export async function saveSartorialContentAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
   revalidatePath("/sartorial-executive");
   revalidatePath("/admin/sartorial-executive");
 }
@@ -52,7 +51,7 @@ export async function savePrescriptionPadSettingsAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
-  revalidatePath("/prescription-pad");
+  revalidatePath("/sartorial-executive");
+  revalidatePath("/sartorial-executive/checkup");
   revalidatePath("/admin/prescription-pad");
 }

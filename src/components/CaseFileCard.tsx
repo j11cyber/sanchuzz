@@ -171,7 +171,7 @@ export default function CaseFileCard({ caseFile }: { caseFile: CaseFileType }) {
           </button>
 
           <Link
-            href="/executive-checkup"
+            href="/sartorial-executive/checkup"
             className="rounded-full bg-charcoal-800 px-3 py-1.5 text-[11px] font-medium text-cream hover:bg-gold hover:text-charcoal-950 transition"
           >
             Diagnose My Style

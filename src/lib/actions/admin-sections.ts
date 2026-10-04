@@ -19,7 +19,7 @@ export async function toggleSectionAction(key: string, isEnabled: boolean) {
     },
   });
 
-  revalidatePath("/");
+  revalidatePath("/sartorial-executive");
   revalidatePath("/admin/sections");
 }
 
@@ -50,6 +50,6 @@ export async function saveAllSectionsAction(formData: FormData) {
     });
   }
 
-  revalidatePath("/");
+  revalidatePath("/sartorial-executive");
   revalidatePath("/admin/sections");
 }

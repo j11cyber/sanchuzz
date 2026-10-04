@@ -1,36 +1,21 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
+import { getActiveServices } from "@/lib/services";
+import { formatNaira } from "@/lib/money";
+import { ATELIER_LOCATION } from "@/lib/contact";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
-const SYSTEM_PROMPT = `You are the lead Sartorial Consultant for THE FASHION CLINIC, a premier luxury menswear styling and executive image consulting house.
+const BASE_PROMPT = `You are the guide assistant for SANSHUZZ & MA-SHIRTS, a menswear house in ${ATELIER_LOCATION}.
 
-Brand Tagline: DIAGNOSE. PRESCRIBE. TRANSFORM.
-Philosophy: "We don't guess. We diagnose." "Most men don't have a fashion problem. They have a diagnosis problem."
-Ultimate Outcome: THE SARTORIAL EXECUTIVE.
+The house has two brands:
+- SANTUS SABAOTH (/santus-sabaoth): the founder's own line. Tailoring, kaftans, agbada, shirts, shoes and bags, all made by him. A regular shop: browse, add to bag, pay with Paystack. Commissions for made-to-measure pieces at /santus-sabaoth/commission.
+- SARTORIAL EXECUTIVE (/sartorial-executive): The Fashion Clinic. Tagline "Diagnose. Prescribe. Transform." Promise: "Become the Sartorial Executive." Paid styling services for executives, founders, lawyers and public figures, plus a curated edit of luxury pieces from him and other houses. Free online Executive Checkup at /sartorial-executive/checkup produces a Patient File and a recommended treatment. Case files at /sartorial-executive/case-files. Book at /sartorial-executive/book. Services are booked with a 50% deposit, balance before delivery, aftercare included. House calls available in Abuja.
 
-Services provided:
-1. The Executive Checkup (₦50,000) — 30-min style diagnosis, full body & lifestyle assessment, major fashion flaws ID.
-2. The Wardrobe Detox (₦120,000) — Complete wardrobe audit, Keep/Tailor/Donate/Remove recommendations, styling session.
-3. The Sartorial Prescription (₦250,000) — 7 outfits for 7 days, 12 core pieces, digital lookbook, mix-and-match matrix, 2 weeks WhatsApp support.
-4. The Boardroom Cure (₦400,000) — 30-day Executive Presence Transformation, bespoke tailoring management, grooming, posture & presence coaching.
-5. Emergency Consultation (₦75,000) — 24-hr turnaround for weddings, interviews, pitches, high-stakes events.
+The house site has the Guide (/guide): articles on caring for clothing, shoes and bags, wardrobe building, colour and fit. Your first job is to answer garment-care and style questions from that knowledge, plainly and specifically. Your second job is to point people to the right brand, page or service.
 
-Case studies include:
-- Case #07: Baggy Suit Syndrome (cured with shoulder restructuring and tapered trousers)
-- Case #12: Boardroom Invisibility (cured with monochromatic palettes and power accessories)
-- Case #03: Weekend-to-Workwear Whiplash (cured with a modular 10-piece capsule)
-
-Storefronts:
-- Santus Sabaoth: single-designer line & bespoke craft (/santus-sabaoth)
-- Sartorial Executive: luxury multi-brand edit (/sartorial-executive)
-- Full Shop (/shop)
-
-Diagnostic tool:
-- Online Executive Checkup (/executive-checkup) which generates a formal Patient File (#TFC-XXXX) and tailored prescriptions.
-
-Answer client queries with an authoritative, refined, sophisticated, and courteous editorial tone. Direct them intelligently to relevant services, case files, products, or the online checkup. Keep responses concise and impactful.`;
+Tone: a top tailor talking. Short, confident, specific. No hype, no emoji, no medical jokes. Never invent prices or policies that are not listed here. If you do not know, say so and suggest WhatsApp via /contact.`;
 
 export async function POST(request: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -38,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         reply:
-          "Welcome to The Fashion Clinic. Our automated AI diagnosis engine is currently offline, but you can immediately take the interactive Executive Checkup at /executive-checkup or explore our 5 clinical services at /services.",
+          "The assistant is offline at the moment. The Guide at /guide covers suit, shoe and bag care, and the Executive Checkup at /sartorial-executive/checkup is open.",
       },
       { status: 200 },
     );
@@ -56,15 +41,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No messages provided" }, { status: 400 });
   }
 
-  const categories = await prisma.guideArticle
-    .findMany({ where: { published: true }, select: { category: true }, distinct: ["category"] })
-    .then((rows) => rows.map((r) => r.category))
-    .catch(() => []);
+  const [categories, services] = await Promise.all([
+    prisma.guideArticle
+      .findMany({ where: { published: true }, select: { category: true }, distinct: ["category"] })
+      .then((rows) => rows.map((r) => r.category))
+      .catch(() => [] as string[]),
+    getActiveServices(),
+  ]);
 
-  const system =
-    categories.length > 0
-      ? `${SYSTEM_PROMPT}\n\nCurrent Aftercare Guide topics available: ${categories.join(", ")}.`
-      : SYSTEM_PROMPT;
+  const serviceLines = services.map(
+    (s) => `- ${s.name}: ${formatNaira(s.price)}${s.duration ? `, ${s.duration}` : ""}. ${s.description}`,
+  );
+
+  const system = [
+    BASE_PROMPT,
+    serviceLines.length ? `\nSartorial Executive treatments:\n${serviceLines.join("\n")}` : "",
+    categories.length ? `\nGuide topics currently published: ${categories.join(", ")}.` : "",
+  ].join("\n");
 
   const client = new Anthropic({ apiKey });
 
@@ -84,8 +77,7 @@ export async function POST(request: Request) {
     console.error("Chat error:", err);
     return NextResponse.json(
       {
-        reply:
-          "I am available to assist you with our clinical styling services. You can explore our services catalogue at /services, inspect our Case Files at /case-files, or complete your personal Executive Checkup at /executive-checkup.",
+        reply: "I cannot answer right now. The Guide at /guide covers most care questions, and you can reach the house via /contact.",
       },
       { status: 200 },
     );

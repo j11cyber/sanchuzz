@@ -75,7 +75,7 @@ export async function getSartorialExecutiveContent(): Promise<SartorialContent> 
     subheading: "Not just well dressed. Authoritative, intentional, and undeniable.",
     description: "The Sartorial Executive is the definitive transformation. It is the transition from accidental clothing choices to an engineered visual identity that communicates leadership before you say a single word.",
     ctaText: "Book Your Executive Checkup",
-    ctaLink: "/executive-checkup",
+    ctaLink: "/sartorial-executive/checkup",
   };
 
   try {

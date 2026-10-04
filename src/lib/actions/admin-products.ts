@@ -3,8 +3,16 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { getAdminSession } from "@/lib/auth";
 import type { StoreSection } from "@/generated/prisma/enums";
 import { sectionToSlug } from "@/lib/products";
+import { brandForSection, brandHref } from "@/lib/brands";
+
+async function requireAdmin() {
+  const session = await getAdminSession();
+  if (!session) throw new Error("Unauthorized");
+  return session;
+}
 
 function slugify(name: string) {
   return name
@@ -28,7 +36,17 @@ function parseCsv(raw: string) {
     .filter(Boolean);
 }
 
+function revalidateBrand(section: StoreSection, productSlug?: string) {
+  const brand = brandForSection(section);
+  revalidatePath(brandHref(brand, "/"));
+  revalidatePath(brandHref(brand, "/shop"));
+  if (productSlug) revalidatePath(brandHref(brand, `/${productSlug}`));
+  revalidatePath(`/admin/products/${sectionToSlug(section)}`);
+}
+
 export async function createProductAction(section: StoreSection, formData: FormData) {
+  await requireAdmin();
+
   const name = String(formData.get("name") ?? "").trim();
   const price = Number(formData.get("price") ?? 0);
   const category = String(formData.get("category") ?? "").trim();
@@ -44,7 +62,7 @@ export async function createProductAction(section: StoreSection, formData: FormD
       section,
       name,
       slug: `${slugify(name)}-${Date.now().toString(36)}`,
-      brand: brand || (section === "SANTUS_SABAOTH" ? "Santus Sabaoth" : null),
+      brand: brand || "Santus Sabaoth",
       category,
       price,
       description,
@@ -55,12 +73,13 @@ export async function createProductAction(section: StoreSection, formData: FormD
     },
   });
 
-  revalidatePath(`/admin/products/${sectionToSlug(section)}`);
-  revalidatePath(section === "SANTUS_SABAOTH" ? "/santus-sabaoth" : "/sartorial-executive");
+  revalidateBrand(section);
   redirect(`/admin/products/${sectionToSlug(section)}`);
 }
 
 export async function updateProductAction(id: string, formData: FormData) {
+  await requireAdmin();
+
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) redirect("/admin");
 
@@ -78,7 +97,7 @@ export async function updateProductAction(id: string, formData: FormData) {
     where: { id },
     data: {
       name,
-      brand: brand || null,
+      brand: brand || "Santus Sabaoth",
       category,
       price,
       description,
@@ -89,21 +108,18 @@ export async function updateProductAction(id: string, formData: FormData) {
     },
   });
 
-  const slug = sectionToSlug(product!.section);
-  revalidatePath(`/admin/products/${slug}`);
-  revalidatePath(`/${slug}`);
-  revalidatePath(`/${slug}/${product!.slug}`);
-  redirect(`/admin/products/${slug}`);
+  revalidateBrand(product.section, product.slug);
+  redirect(`/admin/products/${sectionToSlug(product.section)}`);
 }
 
 export async function deleteProductAction(id: string) {
+  await requireAdmin();
+
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) return;
 
   await prisma.product.delete({ where: { id } });
 
-  const slug = sectionToSlug(product.section);
-  revalidatePath(`/admin/products/${slug}`);
-  revalidatePath(`/${slug}`);
-  redirect(`/admin/products/${slug}`);
+  revalidateBrand(product.section, product.slug);
+  redirect(`/admin/products/${sectionToSlug(product.section)}`);
 }

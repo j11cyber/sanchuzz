@@ -3,9 +3,25 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { getAdminSession } from "@/lib/auth";
+
+async function requireAdmin() {
+  const session = await getAdminSession();
+  if (!session) throw new Error("Unauthorized");
+  return session;
+}
+
+function revalidateDaily() {
+  revalidatePath("/");
+  revalidatePath("/daily");
+  revalidatePath("/admin/daily-picks");
+}
 
 export async function createDailyPickAction(formData: FormData) {
-  const type = String(formData.get("type") ?? "CLOTH") as "CLOTH" | "COLOR";
+  await requireAdmin();
+
+  const rawType = String(formData.get("type") ?? "CLOTH");
+  const type: "CLOTH" | "COLOR" = rawType === "COLOR" ? "COLOR" : "CLOTH";
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const imageUrl = String(formData.get("imageUrl") ?? "").trim();
@@ -23,16 +39,13 @@ export async function createDailyPickAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/admin/daily-picks");
-  revalidatePath("/services/cloth-of-the-day");
-  revalidatePath("/services/color-of-the-day");
+  revalidateDaily();
   redirect("/admin/daily-picks");
 }
 
 export async function deleteDailyPickAction(id: string) {
+  await requireAdmin();
   await prisma.dailyPick.delete({ where: { id } });
-  revalidatePath("/admin/daily-picks");
-  revalidatePath("/services/cloth-of-the-day");
-  revalidatePath("/services/color-of-the-day");
+  revalidateDaily();
   redirect("/admin/daily-picks");
 }
