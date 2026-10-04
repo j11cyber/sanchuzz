@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getActiveServices } from "@/lib/services";
+import { getContactSettings } from "@/lib/site-settings";
 import { BRANDS, brandHref } from "@/lib/brands";
-import { ATELIER_LOCATION, ATELIER_NOTE, CONSULTATION_HOURS } from "@/lib/contact";
 import BookingForm from "@/components/BookingForm";
 
 const S = BRANDS.sartorial;
 
 export const metadata: Metadata = {
   title: "Book a consultation",
-  description: "Book a Sartorial Executive treatment. 50% deposit to book, balance before delivery, aftercare included. Abuja, house calls available.",
+  description: "Book a Sartorial Executive treatment. A deposit books your place, balance before delivery, aftercare included. Abuja, house calls available.",
 };
 
-export default async function BookPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ service?: string; occasion?: string }>;
-}) {
-  const { service, occasion } = await searchParams;
-  const services = await getActiveServices();
-  const bookable = services.map((s) => ({ slug: s.slug, name: s.name, price: s.price }));
+export default async function BookPage({ searchParams }: { searchParams: Promise<{ service?: string; occasion?: string }> }) {
+  const [{ service, occasion }, services, contact] = await Promise.all([searchParams, getActiveServices(), getContactSettings()]);
+  const bookable = services.map((s) => ({ slug: s.slug, name: s.name, price: s.price, depositPercent: s.depositPercent }));
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
@@ -33,18 +28,18 @@ export default async function BookPage({
           <dl className="mt-10 space-y-6 text-sm">
             <div>
               <dt className="text-xs text-accent">Terms</dt>
-              <dd className="mt-1 text-fg-muted/80">50% deposit to book. Balance before delivery. Aftercare included.</dd>
+              <dd className="mt-1 text-fg-muted/80">A deposit books your place. Balance before delivery. Aftercare included.</dd>
             </div>
             <div>
               <dt className="text-xs text-accent">Where</dt>
               <dd className="mt-1 text-fg-muted/80">
-                {ATELIER_LOCATION}. {ATELIER_NOTE}
+                {contact.location}. {contact.locationNote}
               </dd>
             </div>
             <div>
               <dt className="text-xs text-accent">Hours</dt>
               <dd className="mt-1 space-y-0.5 text-fg-muted/80">
-                {CONSULTATION_HOURS.map((h) => (
+                {contact.hours.map((h) => (
                   <div key={h}>{h}</div>
                 ))}
               </dd>
@@ -61,7 +56,7 @@ export default async function BookPage({
         </div>
 
         <div className="rounded-2xl border border-line bg-surface p-6 sm:p-8">
-          <BookingForm services={bookable} initialServiceSlug={service} initialOccasion={occasion} />
+          <BookingForm services={bookable} contact={contact} initialServiceSlug={service} initialOccasion={occasion} />
         </div>
       </div>
     </div>

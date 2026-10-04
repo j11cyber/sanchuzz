@@ -13,6 +13,8 @@ export async function upsertServiceAction(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
   const price = parseInt(String(formData.get("price") ?? "0"), 10);
+  const depositRaw = parseInt(String(formData.get("depositPercent") ?? "50"), 10);
+  const depositPercent = Number.isFinite(depositRaw) ? Math.min(100, Math.max(0, depositRaw)) : 50;
   const duration = String(formData.get("duration") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const bestFor = String(formData.get("bestFor") ?? "").trim();
@@ -33,6 +35,7 @@ export async function upsertServiceAction(formData: FormData) {
         name,
         slug,
         price,
+        depositPercent,
         duration,
         description,
         bestFor,
@@ -48,6 +51,7 @@ export async function upsertServiceAction(formData: FormData) {
         name,
         slug,
         price,
+        depositPercent,
         duration,
         description,
         bestFor,

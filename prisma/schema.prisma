@@ -1,5 +1,5 @@
-// Prisma schema — SanShuzz & Ma-Shirts platform
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Prisma schema: SanShuzz & Ma-Shirts house
+// One database shared by the house site, Santus Sabaoth and Sartorial Executive.
 
 generator client {
   provider = "prisma-client"
@@ -10,6 +10,7 @@ datasource db {
   provider = "postgresql"
 }
 
+/// Which selling brand a product (or order) belongs to.
 enum StoreSection {
   SANTUS_SABAOTH
   SARTORIAL_EXECUTIVE
@@ -27,12 +28,27 @@ enum OrderStatus {
   CANCELLED
 }
 
+/// A full product payment, or the deposit on a Sartorial Executive service.
+enum OrderType {
+  PRODUCT
+  SERVICE_DEPOSIT
+}
+
+enum BookingStatus {
+  ENQUIRY
+  DEPOSIT_PAID
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
 model Product {
   id          String       @id @default(cuid())
   section     StoreSection
   name        String
   slug        String       @unique
-  brand       String?
+  /// Label on the piece. Santus Sabaoth's own work defaults to his name; Sartorial Executive carries other houses too.
+  brand       String       @default("Santus Sabaoth")
   category    String
   price       Int
   description String
@@ -50,16 +66,16 @@ model Product {
 }
 
 model GuideArticle {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  excerpt     String
-  content     String
-  coverImage  String?
-  category    String
-  published   Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  title      String
+  slug       String   @unique
+  excerpt    String
+  content    String
+  coverImage String?
+  category   String
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model DailyPick {
@@ -78,21 +94,27 @@ model DailyPick {
 }
 
 model Order {
-  id           String      @id @default(cuid())
-  reference    String      @unique
+  id           String       @id @default(cuid())
+  reference    String       @unique
+  type         OrderType    @default(PRODUCT)
+  brand        StoreSection
   customerName String
   email        String
   phone        String
-  address      String
-  city         String
-  state        String
-  status       OrderStatus @default(PENDING)
+  /// Delivery details. Not needed for service deposits.
+  address      String?
+  city         String?
+  state        String?
+  status       OrderStatus  @default(PENDING)
   subtotal     Int
   total        Int
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
-  items OrderItem[]
+  items   OrderItem[]
+  booking Booking?
+
+  @@index([brand, createdAt])
 }
 
 model OrderItem {
@@ -114,22 +136,54 @@ model AdminUser {
   createdAt    DateTime @default(now())
 }
 
+/// A Sartorial Executive treatment.
 model ServiceItem {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  price       Int
-  duration    String?
-  description String
-  features    String // JSON-encoded array of feature strings
-  bestFor     String
-  image       String?
-  order       Int      @default(0)
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  price          Int
+  /// Percentage of price paid to book. Balance before delivery.
+  depositPercent Int      @default(50)
+  duration       String?
+  description    String
+  features       String // JSON-encoded array of inclusions
+  bestFor        String
+  image          String?
+  order          Int      @default(0)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  bookings Booking[]
 }
 
+/// A consultation request for a ServiceItem. Created from the booking form or
+/// the checkup result; linked to the deposit order once paid.
+model Booking {
+  id            String        @id @default(cuid())
+  reference     String        @unique
+  customerName  String
+  email         String
+  phone         String
+  serviceId     String
+  service       ServiceItem   @relation(fields: [serviceId], references: [id])
+  occasion      String?
+  preferredDate DateTime?
+  format        String?
+  notes         String?
+  status        BookingStatus @default(ENQUIRY)
+  depositAmount Int
+  orderId       String?       @unique
+  order         Order?        @relation(fields: [orderId], references: [id])
+  checkupId     String?
+  checkup       CheckupSubmission? @relation(fields: [checkupId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status, createdAt])
+}
+
+/// A published before-and-after case study for Sartorial Executive.
 model CaseFile {
   id           String   @id @default(cuid())
   caseNumber   String   @unique
@@ -143,11 +197,13 @@ model CaseFile {
   afterImage   String?
   tags         String // JSON-encoded array of tag strings
   order        Int      @default(0)
-  active       Boolean  @default(true)
+  published    Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
+/// Key/value store for owner-editable settings (contact details, homepage
+/// section toggles, Sartorial Executive spotlight copy, prescription pad header).
 model SiteSetting {
   id        String   @id @default(cuid())
   key       String   @unique
@@ -155,6 +211,7 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
+/// Every completed Executive Checkup.
 model CheckupSubmission {
   id                 String   @id @default(cuid())
   patientRef         String   @unique
@@ -165,9 +222,15 @@ model CheckupSubmission {
   industry           String?
   workEnvironment    String?
   chiefComplaint     String
+  /// Raw answers from the questionnaire, JSON-encoded.
+  answers            String   @default("{}")
   diagnosis          String
+  symptoms           String   @default("[]") // JSON-encoded array
   prescription       String // JSON-encoded prescription strings
   recommendedService String?
   createdAt          DateTime @default(now())
-}
 
+  bookings Booking[]
+
+  @@index([createdAt])
+}

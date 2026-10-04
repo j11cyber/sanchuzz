@@ -48,7 +48,7 @@ export default async function AdminCaseFilesPage() {
                 </td>
                 <td className="p-4 max-w-xs truncate text-cream-dim/80">{c.diagnosis}</td>
                 <td className="p-4">
-                  {c.active ? (
+                  {c.published ? (
                     <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400">
                       Active
                     </span>

@@ -88,6 +88,18 @@ export default async function EditServicePage({
         </div>
 
         <div>
+          <label className="text-xs uppercase tracking-wider text-cream-dim/60">Deposit to book (% of price)</label>
+          <input
+            type="number"
+            name="depositPercent"
+            min={0}
+            max={100}
+            defaultValue={service.depositPercent}
+            className="mt-1 w-full rounded-xl border border-charcoal-700 bg-charcoal-950 px-4 py-2.5 text-xs text-cream focus:border-gold focus:outline-none"
+          />
+        </div>
+
+        <div>
           <label className="text-xs uppercase tracking-wider text-cream-dim/60">Description *</label>
           <textarea
             required

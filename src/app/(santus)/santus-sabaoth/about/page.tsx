@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { BRANDS, brandHref } from "@/lib/brands";
-import { ATELIER_LOCATION } from "@/lib/contact";
+import { getContactSettings } from "@/lib/site-settings";
 
 const B = BRANDS.santus;
 
@@ -16,7 +16,8 @@ export const metadata: Metadata = {
  * TODO(owner): replace the placeholder biography and photographs with the
  * real story, training and workshop photos.
  */
-export default function AboutTheMakerPage() {
+export default async function AboutTheMakerPage() {
+  const contact = await getContactSettings();
   return (
     <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
       <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-start">
@@ -29,7 +30,7 @@ export default function AboutTheMakerPage() {
           <div className="mt-8 space-y-5 text-sm leading-relaxed text-fg-muted/85 sm:text-base">
             <p>
               Santus Sabaoth is a single-designer line. There is no design team and no outside label. Every blazer, kaftan, agbada,
-              shirt, shoe and bag is drawn, cut and finished by Santus himself in the {ATELIER_LOCATION} atelier.
+              shirt, shoe and bag is drawn, cut and finished by Santus himself in the {contact.location} atelier.
             </p>
             <p>
               The work sits between two traditions: the soft-shouldered tailoring of the Italian ateliers and the proportions and cloth

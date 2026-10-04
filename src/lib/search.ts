@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { serializeProduct } from "@/lib/products";
 import { getActiveServices } from "@/lib/services";
-import { getActiveCaseFiles } from "@/lib/case-files";
+import { getPublishedCaseFiles } from "@/lib/case-files";
 import { BRANDS, brandHref, productHref, type StoreSection } from "@/lib/brands";
 
 export type SearchResult = {
@@ -74,7 +74,7 @@ export async function searchSite(query: string): Promise<SearchResult[]> {
       });
     }
 
-    const caseFiles = await getActiveCaseFiles();
+    const caseFiles = await getPublishedCaseFiles();
     const matchedCases = caseFiles.filter(
       (c) =>
         c.title.toLowerCase().includes(q) ||

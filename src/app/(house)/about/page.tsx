@@ -1,24 +1,25 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { BRANDS, HOUSE_NAME } from "@/lib/brands";
-import { ATELIER_LOCATION } from "@/lib/contact";
+import { getContactSettings } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "About",
-  description: `${HOUSE_NAME} is the house behind Santus Sabaoth and Sartorial Executive, based in ${ATELIER_LOCATION}.`,
+  description: `${HOUSE_NAME} is the house behind Santus Sabaoth and Sartorial Executive.`,
 };
 
 /**
  * About the house.
  * TODO(owner): replace placeholder history with the real founding story.
  */
-export default function AboutHousePage() {
+export default async function AboutHousePage() {
+  const contact = await getContactSettings();
   return (
     <div className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
       <h1 className="font-display text-4xl text-fg sm:text-6xl">{HOUSE_NAME}</h1>
       <div className="mt-8 space-y-5 text-sm leading-relaxed text-fg-muted/85 sm:text-base">
         <p>
-          {HOUSE_NAME} is a menswear house in {ATELIER_LOCATION}. It is the name on the bag, and the home of two labels that approach
+          {HOUSE_NAME} is a menswear house in {contact.location}. It is the name on the bag, and the home of two labels that approach
           dressing well from opposite ends.
         </p>
         <p>

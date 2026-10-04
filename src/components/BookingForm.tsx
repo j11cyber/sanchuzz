@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { formatNaira } from "@/lib/money";
-import { ATELIER_LOCATION, whatsappLink } from "@/lib/contact";
+import { whatsappLink, type ContactSettings } from "@/lib/contact";
 
-export type BookableService = { slug: string; name: string; price: number };
+export type BookableService = { slug: string; name: string; price: number; depositPercent: number };
 
 export const OCCASIONS = [
   { value: "boardroom", label: "Boardroom and everyday work" },
@@ -17,20 +17,26 @@ export const OCCASIONS = [
 
 export type Occasion = (typeof OCCASIONS)[number]["value"];
 
-export const FORMATS = ["In person at the Abuja atelier", "House call in Abuja", "Virtual session"] as const;
+export const FORMATS = ["In person at the atelier", "House call", "Virtual session"] as const;
+
+export function depositOf(s: Pick<BookableService, "price" | "depositPercent">) {
+  return Math.round((s.price * s.depositPercent) / 100);
+}
 
 /**
  * Consultation booking form for Sartorial Executive services.
  *
- * Phase 2: collects details and hands off to WhatsApp with a prefilled
- * message. Phase 4 adds the Booking record and the Paystack deposit flow.
+ * Phase 3: collects details and hands off to WhatsApp with a prefilled
+ * message. Phase 4 creates the Booking record and the Paystack deposit flow.
  */
 export default function BookingForm({
   services,
+  contact,
   initialServiceSlug,
   initialOccasion,
 }: {
   services: BookableService[];
+  contact: ContactSettings;
   initialServiceSlug?: string;
   initialOccasion?: string;
 }) {
@@ -45,26 +51,18 @@ export default function BookingForm({
 
   const [serviceSlug, setServiceSlug] = useState(serviceDefault);
   const [occasion, setOccasion] = useState<Occasion>(occasionDefault);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    date: "",
-    format: FORMATS[0] as string,
-    notes: "",
-  });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", date: "", format: FORMATS[0] as string, notes: "" });
   const [submitted, setSubmitted] = useState(false);
 
   const service = services.find((s) => s.slug === serviceSlug) ?? services[0];
   const occasionLabel = OCCASIONS.find((o) => o.value === occasion)?.label ?? occasion;
 
-  const message = service
-    ? `Hello Sartorial Executive, I would like to book ${service.name} (${formatNaira(service.price)}).\n\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nOccasion: ${occasionLabel}\nPreferred date: ${form.date || "Next available"}\nFormat: ${form.format}\nNotes: ${form.notes || "None"}`
-    : "";
-
   if (!service) {
     return <p className="text-sm text-fg-muted/70">No services are available to book right now.</p>;
   }
+
+  const deposit = depositOf(service);
+  const message = `Hello Sartorial Executive, I would like to book ${service.name} (${formatNaira(service.price)}, deposit ${formatNaira(deposit)}).\n\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nOccasion: ${occasionLabel}\nPreferred date: ${form.date || "Next available"}\nFormat: ${form.format}\nNotes: ${form.notes || "None"}`;
 
   if (submitted) {
     return (
@@ -84,15 +82,13 @@ export default function BookingForm({
             <dd className="text-fg">{form.format}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-fg-muted/60">Contact</dt>
-            <dd className="text-fg">{form.phone}</dd>
+            <dt className="text-fg-muted/60">Deposit to book</dt>
+            <dd className="text-fg">{formatNaira(deposit)}</dd>
           </div>
         </dl>
-        <p className="mt-6 text-xs text-fg-muted/60">
-          To confirm a time, send us this request on WhatsApp. Booking is secured with a 50% deposit.
-        </p>
+        <p className="mt-6 text-xs text-fg-muted/60">To confirm a time, send us this request on WhatsApp.</p>
         <a
-          href={whatsappLink(message)}
+          href={whatsappLink(contact.whatsappNumber, message)}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-4 inline-block w-full rounded-full bg-accent px-6 py-3 text-sm font-semibold text-bg transition hover:bg-accent-soft"
@@ -201,14 +197,15 @@ export default function BookingForm({
       </div>
 
       <div className="rounded-xl border border-line bg-bg p-3 text-xs text-fg-muted/70">
-        50% deposit to book, balance before delivery, aftercare included. {ATELIER_LOCATION}, house calls available.
+        {service.depositPercent}% deposit ({formatNaira(deposit)}) to book, balance before delivery, aftercare included. {contact.location}.{" "}
+        {contact.locationNote}
       </div>
 
       <button type="submit" className="w-full rounded-full bg-accent py-3 text-sm font-semibold text-bg transition hover:bg-accent-soft">
-        Request this booking ({formatNaira(service.price)})
+        Request this booking
       </button>
       <a
-        href={whatsappLink("Hello Sartorial Executive, I would like to talk before booking.")}
+        href={whatsappLink(contact.whatsappNumber, "Hello Sartorial Executive, I would like to talk before booking.")}
         target="_blank"
         rel="noopener noreferrer"
         className="block text-center text-xs text-fg-muted/70 underline underline-offset-4 hover:text-accent"

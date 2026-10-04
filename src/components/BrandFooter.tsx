@@ -1,27 +1,23 @@
 import Link from "next/link";
 import { BRANDS, brandHref, HOUSE_NAME, type Brand } from "@/lib/brands";
-import { ATELIER_LOCATION } from "@/lib/contact";
+import type { ContactSettings } from "@/lib/contact";
 
 /**
  * Footer for every brand. The house footer lists both brands. A brand footer
  * lists its own pages, links to the house once, and links to its sibling
- * brand once, quietly.
+ * brand once, quietly. Contact details come from admin settings.
  */
-export default function BrandFooter({ brand }: { brand: Brand }) {
+export default function BrandFooter({ brand, contact }: { brand: Brand; contact: ContactSettings }) {
   const isHouse = brand.key === "house";
   const sibling = brand.sibling ? BRANDS[brand.sibling] : null;
 
-  const brandLinks = brand.nav.map((l) => ({
-    href: isHouse ? l.href : brandHref(brand, l.href),
-    label: l.label,
-  }));
+  const brandLinks = brand.nav.map((l) => ({ href: isHouse ? l.href : brandHref(brand, l.href), label: l.label }));
 
-  const houseLinks = [
-    { href: "/guide", label: "Garment care guide" },
-    { href: "/daily", label: "Today's pick" },
-    { href: "/about", label: "About the house" },
-    { href: "/contact", label: "Contact" },
-  ];
+  const socials = [
+    { href: contact.instagram, label: "Instagram" },
+    { href: contact.tiktok, label: "TikTok" },
+    { href: contact.x, label: "X" },
+  ].filter((s) => s.href);
 
   return (
     <footer className="mt-24 border-t border-line">
@@ -34,6 +30,17 @@ export default function BrandFooter({ brand }: { brand: Brand }) {
               <Link href="/" className="mt-5 inline-block text-xs text-fg-muted/60 transition hover:text-accent">
                 A {HOUSE_NAME} house
               </Link>
+            )}
+            {socials.length > 0 && (
+              <ul className="mt-5 flex gap-4">
+                {socials.map((s) => (
+                  <li key={s.label}>
+                    <a href={s.href} target="_blank" rel="noopener noreferrer" className="text-xs text-fg-muted/70 transition hover:text-accent">
+                      {s.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 
@@ -68,13 +75,16 @@ export default function BrandFooter({ brand }: { brand: Brand }) {
                 </>
               ) : (
                 <>
-                  {houseLinks.slice(0, 2).map((l) => (
-                    <li key={l.href}>
-                      <Link href={l.href} className="text-sm text-fg-muted/80 transition hover:text-accent">
-                        {l.label}
-                      </Link>
-                    </li>
-                  ))}
+                  <li>
+                    <Link href="/guide" className="text-sm text-fg-muted/80 transition hover:text-accent">
+                      Garment care guide
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/daily" className="text-sm text-fg-muted/80 transition hover:text-accent">
+                      Today&rsquo;s pick
+                    </Link>
+                  </li>
                   {sibling && (
                     <li>
                       <Link href={sibling.prefix} className="text-sm text-fg-muted/80 transition hover:text-accent">
@@ -97,7 +107,7 @@ export default function BrandFooter({ brand }: { brand: Brand }) {
           <span>
             &copy; {new Date().getFullYear()} {HOUSE_NAME}
           </span>
-          <span>{ATELIER_LOCATION}</span>
+          <span>{contact.location}</span>
         </div>
       </div>
     </footer>

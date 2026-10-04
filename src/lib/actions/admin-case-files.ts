@@ -5,94 +5,67 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/auth";
 
-export async function upsertCaseFileAction(formData: FormData) {
+async function requireAdmin() {
   const session = await getAdminSession();
   if (!session) throw new Error("Unauthorized");
+  return session;
+}
+
+function revalidateCaseFiles() {
+  revalidatePath("/sartorial-executive");
+  revalidatePath("/sartorial-executive/case-files");
+  revalidatePath("/admin/case-files");
+}
+
+function lines(raw: FormDataEntryValue | null) {
+  return String(raw ?? "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+export async function upsertCaseFileAction(formData: FormData) {
+  await requireAdmin();
 
   const id = String(formData.get("id") ?? "").trim();
-  const caseNumber = String(formData.get("caseNumber") ?? "").trim();
-  const title = String(formData.get("title") ?? "").trim();
-  const slug = String(formData.get("slug") ?? "").trim();
-  const diagnosis = String(formData.get("diagnosis") ?? "").trim();
-  const result = String(formData.get("result") ?? "").trim();
-  const beforeImage = String(formData.get("beforeImage") ?? "").trim() || null;
-  const afterImage = String(formData.get("afterImage") ?? "").trim() || null;
-  const order = parseInt(String(formData.get("order") ?? "0"), 10);
-  const active = formData.get("active") === "on";
-
-  const rawSymptoms = String(formData.get("symptoms") ?? "");
-  const symptoms = rawSymptoms.split("\n").map((s) => s.trim()).filter(Boolean);
-
-  const rawPrescription = String(formData.get("prescription") ?? "");
-  const prescription = rawPrescription.split("\n").map((p) => p.trim()).filter(Boolean);
-
-  const rawTags = String(formData.get("tags") ?? "");
-  const tags = rawTags.split(",").map((t) => t.trim()).filter(Boolean);
+  const data = {
+    caseNumber: String(formData.get("caseNumber") ?? "").trim(),
+    title: String(formData.get("title") ?? "").trim(),
+    slug: String(formData.get("slug") ?? "").trim(),
+    diagnosis: String(formData.get("diagnosis") ?? "").trim(),
+    result: String(formData.get("result") ?? "").trim(),
+    beforeImage: String(formData.get("beforeImage") ?? "").trim() || null,
+    afterImage: String(formData.get("afterImage") ?? "").trim() || null,
+    order: parseInt(String(formData.get("order") ?? "0"), 10) || 0,
+    published: formData.get("published") === "on",
+    symptoms: JSON.stringify(lines(formData.get("symptoms"))),
+    prescription: JSON.stringify(lines(formData.get("prescription"))),
+    tags: JSON.stringify(
+      String(formData.get("tags") ?? "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+    ),
+  };
 
   if (id) {
-    await prisma.caseFile.update({
-      where: { id },
-      data: {
-        caseNumber,
-        title,
-        slug,
-        diagnosis,
-        result,
-        beforeImage,
-        afterImage,
-        order,
-        active,
-        symptoms: JSON.stringify(symptoms),
-        prescription: JSON.stringify(prescription),
-        tags: JSON.stringify(tags),
-      },
-    });
+    await prisma.caseFile.update({ where: { id }, data });
   } else {
-    await prisma.caseFile.create({
-      data: {
-        caseNumber,
-        title,
-        slug,
-        diagnosis,
-        result,
-        beforeImage,
-        afterImage,
-        order,
-        active,
-        symptoms: JSON.stringify(symptoms),
-        prescription: JSON.stringify(prescription),
-        tags: JSON.stringify(tags),
-      },
-    });
+    await prisma.caseFile.create({ data });
   }
 
-  revalidatePath("/");
-  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/case-files");
-  revalidatePath("/admin/case-files");
+  revalidateCaseFiles();
   redirect("/admin/case-files");
 }
 
 export async function deleteCaseFileAction(id: string) {
-  const session = await getAdminSession();
-  if (!session) throw new Error("Unauthorized");
-
+  await requireAdmin();
   await prisma.caseFile.delete({ where: { id } });
-
-  revalidatePath("/");
-  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/case-files");
-  revalidatePath("/admin/case-files");
+  revalidateCaseFiles();
 }
 
-export async function toggleCaseFileActiveAction(id: string, active: boolean) {
-  const session = await getAdminSession();
-  if (!session) throw new Error("Unauthorized");
-
-  await prisma.caseFile.update({
-    where: { id },
-    data: { active },
-  });
-
-  revalidatePath("/");
-  revalidatePath("/sartorial-executive"); revalidatePath("/sartorial-executive/case-files");
-  revalidatePath("/admin/case-files");
+export async function toggleCaseFilePublishedAction(id: string, published: boolean) {
+  await requireAdmin();
+  await prisma.caseFile.update({ where: { id }, data: { published } });
+  revalidateCaseFiles();
 }

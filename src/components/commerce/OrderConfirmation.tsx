@@ -2,13 +2,13 @@ import Link from "next/link";
 import { confirmOrderPayment } from "@/lib/orders";
 import { formatNaira } from "@/lib/money";
 import { brandHref, type Brand } from "@/lib/brands";
-import { whatsappLink } from "@/lib/contact";
+import { whatsappLink, type ContactSettings } from "@/lib/contact";
 
 /**
  * Shared confirmation view, rendered by each selling brand's
  * /order-confirmation page. Verifies the Paystack reference on arrival.
  */
-export default async function OrderConfirmation({ brand, reference }: { brand: Brand; reference?: string }) {
+export default async function OrderConfirmation({ brand, contact, reference }: { brand: Brand; contact: ContactSettings; reference?: string }) {
   const shopHref = brandHref(brand, "/shop");
 
   if (!reference) {
@@ -39,7 +39,7 @@ export default async function OrderConfirmation({ brand, reference }: { brand: B
           Reference <span className="font-mono text-fg">{reference}</span>. If you were charged, send us this reference and we will confirm it by hand.
         </p>
         <a
-          href={whatsappLink(`Hello, I need help confirming order ${reference}.`)}
+          href={whatsappLink(contact.whatsappNumber, `Hello, I need help confirming order ${reference}.`)}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-8 inline-block rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition hover:bg-accent-soft"

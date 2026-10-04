@@ -7,23 +7,16 @@ import { brandHref, type StoreSection } from "@/lib/brands";
 import { useCartStore, cartSubtotal } from "@/lib/cart-store";
 import { formatNaira } from "@/lib/money";
 import { useHydrated } from "@/lib/use-hydrated";
-import { whatsappLink } from "@/lib/contact";
+import { whatsappLink, type ContactSettings } from "@/lib/contact";
 
-function Checkout({ section }: { section: StoreSection }) {
+function Checkout({ section, contact }: { section: StoreSection; contact: ContactSettings }) {
   const brand = useBrand();
   const items = useCartStore(section, (s) => s.items);
   const clear = useCartStore(section, (s) => s.clear);
   const hydrated = useHydrated();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    customerName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-  });
+  const [form, setForm] = useState({ customerName: "", email: "", phone: "", address: "", city: "", state: "" });
 
   if (!hydrated) return <div className="min-h-[50vh]" aria-busy="true" />;
 
@@ -32,10 +25,7 @@ function Checkout({ section }: { section: StoreSection }) {
       <div className="mx-auto max-w-2xl px-5 py-28 text-center sm:px-8">
         <h1 className="font-display text-4xl text-fg">Nothing to pay for yet</h1>
         <p className="mt-4 text-sm text-fg-muted/70">Your bag is empty.</p>
-        <Link
-          href={brandHref(brand, "/shop")}
-          className="mt-8 inline-block rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition hover:bg-accent-soft"
-        >
+        <Link href={brandHref(brand, "/shop")} className="mt-8 inline-block rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition hover:bg-accent-soft">
           Continue shopping
         </Link>
       </div>
@@ -52,11 +42,7 @@ function Checkout({ section }: { section: StoreSection }) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          section,
-          items: items.map((i) => ({ productId: i.productId, size: i.size, quantity: i.quantity })),
-        }),
+        body: JSON.stringify({ ...form, section, items: items.map((i) => ({ productId: i.productId, size: i.size, quantity: i.quantity })) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "We could not start the payment. Please try again.");
@@ -104,7 +90,7 @@ function Checkout({ section }: { section: StoreSection }) {
             <div className="rounded-xl border border-line bg-surface p-4 text-sm text-fg-muted">
               <p>{error}</p>
               <a
-                href={whatsappLink(`Hello, I would like to complete an order from ${brand.name}.`)}
+                href={whatsappLink(contact.whatsappNumber, `Hello, I would like to complete an order from ${brand.name}.`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2 inline-block text-accent underline underline-offset-4"
@@ -146,8 +132,8 @@ function Checkout({ section }: { section: StoreSection }) {
   );
 }
 
-export default function CheckoutForm() {
+export default function CheckoutForm({ contact }: { contact: ContactSettings }) {
   const brand = useBrand();
   if (!brand.section) return null;
-  return <Checkout section={brand.section} />;
+  return <Checkout section={brand.section} contact={contact} />;
 }

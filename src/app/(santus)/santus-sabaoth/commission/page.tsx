@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { ATELIER_LOCATION, whatsappLink } from "@/lib/contact";
+import { whatsappLink } from "@/lib/contact";
+import { getContactSettings } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "Commission a piece",
@@ -20,7 +21,8 @@ const STEPS = [
   { title: "Deliver", body: "Three to eight weeks depending on the piece. Care instructions come with it." },
 ];
 
-export default function CommissionPage() {
+export default async function CommissionPage() {
+  const contact = await getContactSettings();
   const message = "Hello Santus Sabaoth, I would like to commission a piece.";
 
   return (
@@ -60,10 +62,10 @@ export default function CommissionPage() {
         <div className="mt-16 rounded-3xl border border-line bg-surface p-8 text-center sm:p-12">
           <h2 className="font-display text-3xl text-fg">Start a commission</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-fg-muted/70">
-            Tell us what you would like made and we will arrange a measurement. {ATELIER_LOCATION}. House calls available.
+            Tell us what you would like made and we will arrange a measurement. {contact.location}. {contact.locationNote}
           </p>
           <a
-            href={whatsappLink(message)}
+            href={whatsappLink(contact.whatsappNumber, message)}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-7 inline-block rounded-full bg-accent px-7 py-3.5 text-sm font-semibold text-bg transition hover:bg-accent-soft"

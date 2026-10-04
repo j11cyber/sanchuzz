@@ -4,7 +4,8 @@ import { logoutAction } from "@/lib/actions/admin-auth";
 
 const links = [
   { href: "/admin", label: "Overview & Stats" },
-  { href: "/admin/sections", label: "Homepage Section Toggles" },
+  { href: "/admin/settings", label: "Site Settings (contact)" },
+  { href: "/admin/sections", label: "Sartorial Landing Sections" },
   { href: "/admin/services", label: "Services Catalogue" },
   { href: "/admin/case-files", label: "Case Files Manager" },
   { href: "/admin/sartorial-executive", label: "Sartorial Executive Content" },

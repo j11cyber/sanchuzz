@@ -2,17 +2,20 @@
 
 import { useEffect } from "react";
 import BookingForm, { type BookableService } from "@/components/BookingForm";
+import type { ContactSettings } from "@/lib/contact";
 
 export default function BookingModal({
   isOpen,
   onClose,
   services,
+  contact,
   initialServiceSlug,
   initialOccasion,
 }: {
   isOpen: boolean;
   onClose: () => void;
   services: BookableService[];
+  contact: ContactSettings;
   initialServiceSlug?: string;
   initialOccasion?: string;
 }) {
@@ -28,12 +31,7 @@ export default function BookingModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Book a consultation"
-    >
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="Book a consultation">
       <div className="fixed inset-0 bg-deep/80 backdrop-blur-md" onClick={onClose} />
       <div className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-line bg-surface shadow-lift sm:rounded-2xl">
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
@@ -45,7 +43,7 @@ export default function BookingModal({
           </button>
         </div>
         <div className="p-6">
-          <BookingForm services={services} initialServiceSlug={initialServiceSlug} initialOccasion={initialOccasion} />
+          <BookingForm services={services} contact={contact} initialServiceSlug={initialServiceSlug} initialOccasion={initialOccasion} />
         </div>
       </div>
     </div>

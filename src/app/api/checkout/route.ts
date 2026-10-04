@@ -11,7 +11,7 @@ const SECTIONS: StoreSection[] = ["SANTUS_SABAOTH", "SARTORIAL_EXECUTIVE"];
 /**
  * Product checkout for either selling brand. The server recomputes every
  * price and stock level from the database and never trusts client totals.
- * Phase 4 adds the service-deposit flow alongside this one.
+ * Service deposits use /api/book (Phase 4).
  */
 export async function POST(request: Request) {
   let body: {
@@ -64,13 +64,7 @@ export async function POST(request: Request) {
     if (product.stock < item.quantity) {
       return NextResponse.json({ error: `Only ${product.stock} of ${product.name} left in stock.` }, { status: 400 });
     }
-    lineItems.push({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      size: item.size,
-      quantity: item.quantity,
-    });
+    lineItems.push({ productId: product.id, name: product.name, price: product.price, size: item.size, quantity: item.quantity });
   }
 
   const subtotal = lineItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -81,6 +75,8 @@ export async function POST(request: Request) {
   const order = await prisma.order.create({
     data: {
       reference,
+      type: "PRODUCT",
+      brand: section,
       customerName,
       email,
       phone,
@@ -91,13 +87,7 @@ export async function POST(request: Request) {
       total,
       status: "PENDING",
       items: {
-        create: lineItems.map((i) => ({
-          productId: i.productId,
-          name: i.name,
-          price: i.price,
-          size: i.size,
-          quantity: i.quantity,
-        })),
+        create: lineItems.map((i) => ({ productId: i.productId, name: i.name, price: i.price, size: i.size, quantity: i.quantity })),
       },
     },
   });
@@ -112,9 +102,7 @@ export async function POST(request: Request) {
 
   if (!process.env.PAYSTACK_SECRET_KEY) {
     return NextResponse.json(
-      {
-        error: `Online payment is not switched on yet. Your order reference is ${reference}. Message us on WhatsApp to complete it.`,
-      },
+      { error: `Online payment is not switched on yet. Your order reference is ${reference}. Message us on WhatsApp to complete it.` },
       { status: 503 },
     );
   }
@@ -125,7 +113,7 @@ export async function POST(request: Request) {
       amountNaira: total,
       reference,
       callbackUrl: `${siteUrl}${brandHref(brand, "/order-confirmation")}`,
-      metadata: { orderId: order.id, section },
+      metadata: { orderId: order.id, section, type: "PRODUCT" },
     });
     return NextResponse.json({ authorizationUrl: transaction.authorization_url });
   } catch (err) {

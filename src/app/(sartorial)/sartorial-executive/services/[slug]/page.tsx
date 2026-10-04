@@ -2,15 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getActiveServices, getServiceBySlug } from "@/lib/services";
+import { getActiveServices, getServiceBySlug, depositFor } from "@/lib/services";
+import { getContactSettings } from "@/lib/site-settings";
 import { formatNaira } from "@/lib/money";
 import { BRANDS, brandHref } from "@/lib/brands";
-import { ATELIER_LOCATION, whatsappLink } from "@/lib/contact";
+import { whatsappLink } from "@/lib/contact";
 
 const S = BRANDS.sartorial;
-
-/** Default deposit until Phase 3 adds `depositPercent` to ServiceItem. */
-const DEPOSIT_PERCENT = 50;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -21,11 +19,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const service = await getServiceBySlug(slug);
+  const [service, contact] = await Promise.all([getServiceBySlug(slug), getContactSettings()]);
   if (!service || !service.active) notFound();
 
   const others = (await getActiveServices()).filter((s) => s.slug !== service.slug);
-  const deposit = Math.round((service.price * DEPOSIT_PERCENT) / 100);
+  const deposit = depositFor(service);
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
@@ -66,7 +64,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           <div className="font-display text-3xl text-accent">{formatNaira(service.price)}</div>
           <dl className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-fg-muted/60">Deposit to book</dt>
+              <dt className="text-fg-muted/60">Deposit to book ({service.depositPercent}%)</dt>
               <dd className="text-fg">{formatNaira(deposit)}</dd>
             </div>
             <div className="flex justify-between gap-4">
@@ -79,7 +77,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-fg-muted/60">Where</dt>
-              <dd className="text-right text-fg">{ATELIER_LOCATION}, or a house call</dd>
+              <dd className="text-right text-fg">{contact.location}, or a house call</dd>
             </div>
           </dl>
           <Link
@@ -89,7 +87,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             Book this treatment
           </Link>
           <a
-            href={whatsappLink(`Hello Sartorial Executive, I have a question about ${service.name}.`)}
+            href={whatsappLink(contact.whatsappNumber, `Hello Sartorial Executive, I have a question about ${service.name}.`)}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-3 block text-center text-xs text-fg-muted/70 underline underline-offset-4 hover:text-accent"

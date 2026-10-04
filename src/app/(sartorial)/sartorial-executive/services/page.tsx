@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getActiveServices } from "@/lib/services";
+import { getContactSettings } from "@/lib/site-settings";
 import { BRANDS, brandHref } from "@/lib/brands";
-import { ATELIER_LOCATION } from "@/lib/contact";
 import ServicesCatalogue from "@/components/ServicesCatalogue";
 
 const S = BRANDS.sartorial;
@@ -14,20 +14,20 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-  const services = await getActiveServices();
+  const [services, contact] = await Promise.all([getActiveServices(), getContactSettings()]);
 
   return (
     <div className="space-y-16 py-12 sm:space-y-20 sm:py-16">
       <section className="mx-auto max-w-7xl px-5 sm:px-8">
         <h1 className="font-display text-4xl text-fg sm:text-6xl">Treatments</h1>
         <p className="mt-5 max-w-2xl text-sm leading-relaxed text-fg-muted/80 sm:text-base">
-          We don&rsquo;t guess. We diagnose the specific friction in how you dress and prescribe the fix, from a thirty-minute
-          consultation to a thirty-day transformation.
+          We don&rsquo;t guess. We diagnose the specific friction in how you dress and prescribe the fix, from a thirty-minute consultation to a
+          thirty-day transformation.
         </p>
         <dl className="mt-8 grid gap-4 text-sm sm:grid-cols-3">
           <div className="rounded-xl border border-line bg-surface p-4">
             <dt className="text-xs text-accent">To book</dt>
-            <dd className="mt-1 text-fg">50% deposit secures your appointment</dd>
+            <dd className="mt-1 text-fg">A deposit secures your appointment</dd>
           </div>
           <div className="rounded-xl border border-line bg-surface p-4">
             <dt className="text-xs text-accent">Balance</dt>
@@ -35,13 +35,15 @@ export default async function ServicesPage() {
           </div>
           <div className="rounded-xl border border-line bg-surface p-4">
             <dt className="text-xs text-accent">Where</dt>
-            <dd className="mt-1 text-fg">{ATELIER_LOCATION}. House calls available.</dd>
+            <dd className="mt-1 text-fg">
+              {contact.location}. {contact.locationNote}
+            </dd>
           </div>
         </dl>
       </section>
 
       <section>
-        <ServicesCatalogue services={services} showHeading={false} />
+        <ServicesCatalogue services={services} contact={contact} showHeading={false} />
       </section>
 
       <section className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -49,8 +51,8 @@ export default async function ServicesPage() {
           <div>
             <h2 className="font-display text-2xl text-fg sm:text-3xl">Not sure which treatment you need?</h2>
             <p className="mt-4 text-sm leading-relaxed text-fg-muted/75">
-              Take the online Executive Checkup. In under three minutes it reads your profession, your wardrobe complaints and your
-              goals, and recommends the treatment that fits.
+              Take the online Executive Checkup. In under three minutes it reads your profession, your wardrobe complaints and your goals, and
+              recommends the treatment that fits.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">

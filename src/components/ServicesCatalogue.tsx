@@ -4,20 +4,24 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatNaira } from "@/lib/money";
 import type { ServiceItemType } from "@/lib/services";
+import { depositOf } from "@/components/BookingForm";
 import { BRANDS, brandHref } from "@/lib/brands";
+import type { ContactSettings } from "@/lib/contact";
 import BookingModal from "@/components/BookingModal";
 
 const S = BRANDS.sartorial;
 
 export default function ServicesCatalogue({
   services,
+  contact,
   showHeading = true,
 }: {
   services: ServiceItemType[];
+  contact: ContactSettings;
   showHeading?: boolean;
 }) {
   const [selectedServiceSlug, setSelectedServiceSlug] = useState<string | null>(null);
-  const bookable = services.map((s) => ({ slug: s.slug, name: s.name, price: s.price }));
+  const bookable = services.map((s) => ({ slug: s.slug, name: s.name, price: s.price, depositPercent: s.depositPercent }));
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-8">
@@ -25,7 +29,7 @@ export default function ServicesCatalogue({
         <div className="max-w-2xl">
           <h2 className="font-display text-3xl text-fg sm:text-4xl">Treatments</h2>
           <p className="mt-4 text-sm leading-relaxed text-fg-muted/75">
-            Five interventions, from a thirty-minute diagnosis to a thirty-day transformation. Each begins with a 50% deposit.
+            Five interventions, from a thirty-minute diagnosis to a thirty-day transformation. A deposit books your place.
           </p>
         </div>
       )}
@@ -35,14 +39,17 @@ export default function ServicesCatalogue({
           <article
             key={service.id}
             id={service.slug}
-            className={`flex flex-col justify-between rounded-2xl border bg-surface p-6 ${
-              index === 3 ? "border-accent/50 lg:col-span-2" : "border-line"
-            }`}
+            className={`flex flex-col justify-between rounded-2xl border bg-surface p-6 ${index === 3 ? "border-accent/50 lg:col-span-2" : "border-line"}`}
           >
             <div>
               <div className="flex items-start justify-between gap-4">
                 <span className="text-xs text-fg-muted/60">{service.duration || "By arrangement"}</span>
-                <div className="font-display text-xl text-accent">{formatNaira(service.price)}</div>
+                <div className="text-right">
+                  <div className="font-display text-xl text-accent">{formatNaira(service.price)}</div>
+                  <div className="text-xs text-fg-muted/60">
+                    {formatNaira(depositOf(service))} to book
+                  </div>
+                </div>
               </div>
 
               <h3 className="mt-4 font-display text-2xl text-fg">
@@ -91,7 +98,7 @@ export default function ServicesCatalogue({
       </div>
 
       {selectedServiceSlug && (
-        <BookingModal isOpen onClose={() => setSelectedServiceSlug(null)} services={bookable} initialServiceSlug={selectedServiceSlug} />
+        <BookingModal isOpen onClose={() => setSelectedServiceSlug(null)} services={bookable} contact={contact} initialServiceSlug={selectedServiceSlug} />
       )}
     </div>
   );

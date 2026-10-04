@@ -3,10 +3,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getProductsBySection } from "@/lib/products";
 import { getActiveServices } from "@/lib/services";
-import { getActiveCaseFiles } from "@/lib/case-files";
-import { getSectionToggles, getSartorialExecutiveContent } from "@/lib/site-settings";
+import { getPublishedCaseFiles } from "@/lib/case-files";
+import { getSectionToggles, getSartorialExecutiveContent, getContactSettings } from "@/lib/site-settings";
 import { BRANDS, brandHref } from "@/lib/brands";
-import { ATELIER_LOCATION } from "@/lib/contact";
 import ScrollReveal from "@/components/ScrollReveal";
 import ParallaxImage from "@/components/ParallaxImage";
 import CaseFileCard from "@/components/CaseFileCard";
@@ -34,11 +33,12 @@ const PILLARS = [
  * admin (Homepage Section Toggles). Facelift in Phase 7.
  */
 export default async function SartorialExecutiveLanding() {
-  const [toggles, sartorialContent, services, caseFiles, products, guideArticles] = await Promise.all([
+  const [toggles, contact, sartorialContent, services, caseFiles, products, guideArticles] = await Promise.all([
     getSectionToggles(),
+    getContactSettings(),
     getSartorialExecutiveContent(),
     getActiveServices(),
-    getActiveCaseFiles(),
+    getPublishedCaseFiles(),
     getProductsBySection("SARTORIAL_EXECUTIVE"),
     prisma.guideArticle.findMany({ where: { published: true }, orderBy: { createdAt: "desc" }, take: 3 }),
   ]);
@@ -191,7 +191,7 @@ export default async function SartorialExecutiveLanding() {
 
       {toggles.section_services && (
         <section className="py-6">
-          <ServicesCatalogue services={services} />
+          <ServicesCatalogue services={services} contact={contact} />
         </section>
       )}
 
@@ -290,7 +290,7 @@ export default async function SartorialExecutiveLanding() {
           <ScrollReveal>
             <h2 className="font-display text-3xl text-fg sm:text-5xl">Become the Sartorial Executive.</h2>
             <p className="mx-auto mt-4 max-w-xl text-sm text-fg-muted/75">
-              Stop guessing with random purchases. Start with a checkup, or book a consultation at the atelier in {ATELIER_LOCATION}. House
+              Stop guessing with random purchases. Start with a checkup, or book a consultation at the atelier in {contact.location}. House
               calls available.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">

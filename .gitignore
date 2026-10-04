@@ -58,3 +58,6 @@ next-env.d.ts
 
 # Dependencies
 node_modules/
+
+# Database backups (scripts/db-backup.mjs)
+/backups

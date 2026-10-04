@@ -159,13 +159,13 @@ export default async function EditCaseFilePage({
         <div className="flex items-center gap-2 pt-2">
           <input
             type="checkbox"
-            name="active"
-            id="active"
-            defaultChecked={caseFile.active}
+            name="published"
+            id="published"
+            defaultChecked={caseFile.published}
             className="h-4 w-4 rounded border-charcoal-700 text-gold focus:ring-gold"
           />
-          <label htmlFor="active" className="text-xs text-cream">
-            Active / Visible on public site
+          <label htmlFor="published" className="text-xs text-cream">
+            Published on the public site
           </label>
         </div>
 

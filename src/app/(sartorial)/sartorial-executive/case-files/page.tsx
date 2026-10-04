@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getActiveCaseFiles } from "@/lib/case-files";
+import { getPublishedCaseFiles } from "@/lib/case-files";
 import CaseFileCard from "@/components/CaseFileCard";
 import ScrollReveal from "@/components/ScrollReveal";
 
@@ -16,7 +16,7 @@ export default async function CaseFilesPage({
   searchParams: Promise<{ tag?: string }>;
 }) {
   const { tag } = await searchParams;
-  const allCaseFiles = await getActiveCaseFiles();
+  const allCaseFiles = await getPublishedCaseFiles();
 
   const allTags = Array.from(
     new Set(allCaseFiles.flatMap((c) => c.tags))

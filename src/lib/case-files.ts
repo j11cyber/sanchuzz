@@ -13,40 +13,50 @@ export type CaseFileType = {
   afterImage?: string | null;
   tags: string[];
   order: number;
-  active: boolean;
+  published: boolean;
 };
 
-export async function getActiveCaseFiles(): Promise<CaseFileType[]> {
-  try {
-    const cases = await prisma.caseFile.findMany({
-      where: { active: true },
-      orderBy: { order: "asc" },
-    });
+type Row = {
+  id: string;
+  caseNumber: string;
+  slug: string;
+  title: string;
+  symptoms: string;
+  diagnosis: string;
+  prescription: string;
+  result: string;
+  beforeImage: string | null;
+  afterImage: string | null;
+  tags: string;
+  order: number;
+  published: boolean;
+};
 
-    return cases.map((c) => ({
-      ...c,
-      symptoms: safeParseArray(c.symptoms),
-      prescription: safeParseArray(c.prescription),
-      tags: safeParseArray(c.tags),
-    }));
+function hydrate(c: Row): CaseFileType {
+  return {
+    ...c,
+    symptoms: safeParseArray(c.symptoms),
+    prescription: safeParseArray(c.prescription),
+    tags: safeParseArray(c.tags),
+  };
+}
+
+/** Published case files, in display order. */
+export async function getPublishedCaseFiles(): Promise<CaseFileType[]> {
+  try {
+    const cases = await prisma.caseFile.findMany({ where: { published: true }, orderBy: { order: "asc" } });
+    return cases.map(hydrate);
   } catch (err) {
     console.error("Error loading case files:", err);
     return [];
   }
 }
 
+
 export async function getAllCaseFilesAdmin(): Promise<CaseFileType[]> {
   try {
-    const cases = await prisma.caseFile.findMany({
-      orderBy: { order: "asc" },
-    });
-
-    return cases.map((c) => ({
-      ...c,
-      symptoms: safeParseArray(c.symptoms),
-      prescription: safeParseArray(c.prescription),
-      tags: safeParseArray(c.tags),
-    }));
+    const cases = await prisma.caseFile.findMany({ orderBy: { order: "asc" } });
+    return cases.map(hydrate);
   } catch (err) {
     console.error("Error loading all case files:", err);
     return [];
@@ -55,18 +65,8 @@ export async function getAllCaseFilesAdmin(): Promise<CaseFileType[]> {
 
 export async function getCaseFileBySlug(slug: string): Promise<CaseFileType | null> {
   try {
-    const caseItem = await prisma.caseFile.findUnique({
-      where: { slug },
-    });
-
-    if (!caseItem) return null;
-
-    return {
-      ...caseItem,
-      symptoms: safeParseArray(caseItem.symptoms),
-      prescription: safeParseArray(caseItem.prescription),
-      tags: safeParseArray(caseItem.tags),
-    };
+    const caseItem = await prisma.caseFile.findUnique({ where: { slug } });
+    return caseItem ? hydrate(caseItem) : null;
   } catch (err) {
     console.error("Error loading case file by slug:", err);
     return null;

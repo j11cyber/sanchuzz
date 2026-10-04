@@ -1,28 +1,40 @@
 /**
- * House contact details.
+ * House contact details: types, defaults and pure helpers.
  *
- * TODO(owner): confirm the real WhatsApp number and contact email. Phase 3
- * moves these into SiteSetting so the owner can edit them in admin without a
- * deploy. Until then this is the single place they live; never hard-code them
- * in a page.
+ * The live values are owner-editable in admin and stored in SiteSetting
+ * under the key "contact". Server code reads them with getContactSettings()
+ * from "@/lib/site-settings" and passes them down to client components.
+ * Nothing should import DEFAULT_CONTACT to render a number directly; the
+ * defaults exist only as the seed and the fallback when the row is missing.
  */
 
-/** International format without "+", as wa.me expects. Placeholder until confirmed. */
-export const WHATSAPP_NUMBER = "2348000000000";
+export type ContactSettings = {
+  /** International format without "+", as wa.me expects. */
+  whatsappNumber: string;
+  contactEmail: string;
+  location: string;
+  locationNote: string;
+  hours: string[];
+  instagram: string;
+  tiktok: string;
+  x: string;
+};
 
-export const CONTACT_EMAIL = "hello@example.com"; // TODO(owner): confirm
-
-export const ATELIER_LOCATION = "Abuja, FCT, Nigeria";
-export const ATELIER_NOTE = "House calls available across Abuja by appointment.";
-
-export const CONSULTATION_HOURS = [
-  "Monday to Friday, 9:00 to 18:00 WAT",
-  "Saturday, 10:00 to 16:00 WAT",
-  "Sunday, emergency consultations by appointment",
-];
+/** Seed values. TODO(owner): confirm the real WhatsApp number and email. */
+export const DEFAULT_CONTACT: ContactSettings = {
+  whatsappNumber: "2348000000000",
+  contactEmail: "hello@example.com",
+  location: "Abuja, FCT, Nigeria",
+  locationNote: "House calls available across Abuja by appointment.",
+  hours: ["Monday to Friday, 9:00 to 18:00 WAT", "Saturday, 10:00 to 16:00 WAT", "Sunday, emergency consultations by appointment"],
+  instagram: "",
+  tiktok: "",
+  x: "",
+};
 
 /** Build a wa.me link with an optional prefilled message. */
-export function whatsappLink(message?: string): string {
-  const base = `https://wa.me/${WHATSAPP_NUMBER}`;
+export function whatsappLink(number: string, message?: string): string {
+  const digits = number.replace(/[^\d]/g, "");
+  const base = `https://wa.me/${digits}`;
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
