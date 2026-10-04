@@ -1,44 +1,60 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatNaira } from "@/lib/money";
 import type { Product } from "@/lib/products";
+import QuickView from "@/components/QuickView";
 
+/**
+ * A product card. The photograph is the card. Hover shows the second angle
+ * where one exists; "Quick view" opens the piece without leaving the page.
+ */
 export default function ProductCard({
   product,
   basePath,
+  sizes = "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw",
+  priority = false,
+  className = "",
 }: {
   product: Product;
   basePath: string;
+  sizes?: string;
+  priority?: boolean;
+  className?: string;
 }) {
-  const image = product.images[0];
+  const [open, setOpen] = useState(false);
+  const [front, second] = product.images;
+  const href = `${basePath}/${product.slug}`;
+
   return (
-    <Link
-      href={`${basePath}/${product.slug}`}
-      className="group block overflow-hidden rounded-xl border border-charcoal-800/60 bg-charcoal-900 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lift sm:rounded-2xl sm:border-charcoal-800"
-    >
-      <div className="relative aspect-[4/5] overflow-hidden bg-charcoal-800">
-        {image && (
-          <Image
-            src={image}
-            alt={product.name}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-            className="object-cover transition duration-500 group-hover:scale-105"
-          />
+    <article className={`pc group ${className}`}>
+      <Link href={href} className="pc-media relative block aspect-[4/5] overflow-hidden bg-surface" aria-label={product.name}>
+        {front ? (
+          <Image src={front} alt="" fill priority={priority} sizes={sizes} className="object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-xs text-fg-muted/40">Photo to follow</div>
         )}
-        {product.brand && (
-          <span className="absolute left-2 top-2 rounded-full bg-charcoal-950/80 px-2 py-0.5 text-[9px] uppercase tracking-widest text-gold backdrop-blur-sm sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
-            {product.brand}
-          </span>
-        )}
-      </div>
-      <div className="p-2.5 sm:p-4">
-        <div className="text-[9px] uppercase tracking-widest text-cream-dim/50 sm:text-[11px]">
-          {product.category}
+        {second && <Image src={second} alt="" fill sizes={sizes} className="pc-img-2 object-cover" />}
+        {product.stock <= 0 && <span className="absolute left-3 top-3 bg-bg/85 px-2 py-1 text-[11px] text-fg-muted">Made to order</span>}
+      </Link>
+
+      <div className="mt-3 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <Link href={href} className="block truncate font-display text-lg leading-tight text-fg transition hover:text-accent sm:text-xl">
+            {product.name}
+          </Link>
+          <div className="mt-0.5 text-xs text-fg-muted/60">{product.brand ?? product.category}</div>
         </div>
-        <h3 className="mt-1 font-display text-sm text-cream sm:text-base">{product.name}</h3>
-        <div className="mt-1 text-xs text-gold sm:mt-2 sm:text-sm">{formatNaira(product.price)}</div>
+        <div className="shrink-0 text-sm text-fg">{formatNaira(product.price)}</div>
       </div>
-    </Link>
+
+      <button type="button" onClick={() => setOpen(true)} className="pc-quick link-line mt-2 text-xs text-fg-muted/80 hover:text-accent">
+        Quick view
+      </button>
+
+      {open && <QuickView product={product} href={href} onClose={() => setOpen(false)} />}
+    </article>
   );
 }

@@ -50,6 +50,49 @@ const sartorialProducts = [
   { name: "Executive Attaché Briefcase", slug: "executive-attache-briefcase", brand: "Santus Sabaoth", category: "Bags", price: 210000, description: "Structured full-grain leather attaché with brushed brass hardware and a hand-stitched gusset.", images: [IMG("sart-bag-1"), IMG("sart-bag-2")], sizes: ["One Size"], stock: 6, featured: false },
 ];
 
+/* Curated placeholder pairs [front, second angle] until product photography arrives. TODO: real photo. */
+const P = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1400&q=80`;
+const navyButtoning = P("1507679799987-c73779587ccf");
+const adjustingJacket = P("1544022613-e87ca75a784a");
+const pinstripeDB = P("1480429370139-e0132c086e2a");
+const flatLay = P("1593030761757-71fae45fa0e7");
+const tanOxfords = P("1614252235316-8c857d38b5f4");
+const windowpaneBowTie = P("1600091166971-7f9faad6c1e2");
+const blackSuitBrick = P("1598808503746-f34c53b9323e");
+const darkSuitRedTie = P("1519085360753-af0119f7cbe7");
+const blackSuitStreet = P("1617127365659-c47fa864d8bc");
+const atelierCheckSuit = P("1521341057461-6eb5f40b07ab");
+const shawlKnit = P("1506794778202-cad84cf45f1d");
+const burgundyKnit = P("1506634572416-48cdfe530110");
+const hangingWarm = P("1445205170230-053b83016050");
+
+const PLACEHOLDER_IMAGES: Record<string, string[]> = {
+  "obsidian-tailored-blazer": [navyButtoning, adjustingJacket],
+  "charcoal-wool-trousers": [pinstripeDB, flatLay],
+  "gold-stitched-oxford-shirt": [adjustingJacket, navyButtoning],
+  "handcrafted-leather-loafers": [tanOxfords, flatLay],
+  "sabaoth-signature-kaftan": [shawlKnit, burgundyKnit],
+  "ivory-linen-agbada-set": [hangingWarm, atelierCheckSuit],
+  "woven-raffia-tote": [hangingWarm],
+  "sartorial-signature-overcoat": [darkSuitRedTie, blackSuitStreet],
+  "milano-two-piece-suit": [windowpaneBowTie, blackSuitBrick],
+  "whole-cut-oxford-shoe": [tanOxfords, flatLay],
+  "sartorial-silk-evening-shirt": [blackSuitBrick, blackSuitStreet],
+  "onyx-crocodile-embossed-belt": [flatLay],
+  "cufflink-set-onyx-gold": [adjustingJacket],
+  "executive-attache-briefcase": [darkSuitRedTie],
+};
+
+/** Pieces shown on the house homepage and brand landings. */
+const FEATURED = new Set([
+  "obsidian-tailored-blazer",
+  "charcoal-wool-trousers",
+  "handcrafted-leather-loafers",
+  "sartorial-signature-overcoat",
+  "milano-two-piece-suit",
+  "whole-cut-oxford-shoe",
+]);
+
 /* ---------------------------------------------------------------- guide */
 
 const guideArticles = [
@@ -87,14 +130,27 @@ async function main() {
     await prisma.product.upsert({
       where: { slug: p.slug },
       update: {},
-      create: { section: "SANTUS_SABAOTH", brand: "Santus Sabaoth", ...p, images: JSON.stringify(p.images), sizes: JSON.stringify(p.sizes) },
+      create: {
+        section: "SANTUS_SABAOTH",
+        brand: "Santus Sabaoth",
+        ...p,
+        images: JSON.stringify(PLACEHOLDER_IMAGES[p.slug] ?? p.images),
+        sizes: JSON.stringify(p.sizes),
+        featured: FEATURED.has(p.slug),
+      },
     });
   }
   for (const p of sartorialProducts) {
     await prisma.product.upsert({
       where: { slug: p.slug },
       update: {},
-      create: { section: "SARTORIAL_EXECUTIVE", ...p, images: JSON.stringify(p.images), sizes: JSON.stringify(p.sizes) },
+      create: {
+        section: "SARTORIAL_EXECUTIVE",
+        ...p,
+        images: JSON.stringify(PLACEHOLDER_IMAGES[p.slug] ?? p.images),
+        sizes: JSON.stringify(p.sizes),
+        featured: FEATURED.has(p.slug),
+      },
     });
   }
 

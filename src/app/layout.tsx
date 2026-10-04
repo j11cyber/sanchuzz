@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { HOUSE_NAME } from "@/lib/brands";
+import SmoothScroll from "@/components/motion/SmoothScroll";
+import Intro from "@/components/motion/Intro";
 
 export const metadata: Metadata = {
   title: {
@@ -11,14 +13,25 @@ export const metadata: Metadata = {
     "SanShuzz & Ma-Shirts is the house behind Santus Sabaoth, the maker's own line, and Sartorial Executive, The Fashion Clinic for executive menswear.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#161513",
+  width: "device-width",
+  initialScale: 1,
+};
+
 /**
  * Bare shell. Each brand's route-group layout provides its own fonts, tokens,
- * navigation and footer so the three brands read as separate sites.
+ * navigation and footer so the three brands read as separate sites. Smooth
+ * scrolling and the first-load intro are shared.
  */
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <SmoothScroll />
+        <Intro />
+        {children}
+      </body>
     </html>
   );
 }

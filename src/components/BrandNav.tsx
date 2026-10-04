@@ -59,13 +59,13 @@ export default function BrandNav() {
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b transition-colors duration-300 ${
-        scrolled ? "border-line bg-bg/95 backdrop-blur-md" : "border-transparent bg-bg/70 backdrop-blur-sm"
+      className={`sticky top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
+        scrolled ? "border-line/80 bg-bg/90 backdrop-blur-md" : "border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-8">
+      <div className="mx-auto flex max-w-[110rem] items-center justify-between gap-4 px-4 py-4 sm:px-8 lg:px-12">
         <div className="flex flex-col">
-          <Link href={home} className="font-display text-xl leading-none text-fg transition hover:text-accent sm:text-2xl">
+          <Link href={home} className="font-display text-[1.15rem] uppercase leading-none tracking-[0.14em] text-fg transition hover:text-accent sm:text-[1.3rem]">
             {brand.name}
           </Link>
           {!isHouse && (
@@ -83,7 +83,7 @@ export default function BrandNav() {
               <Link
                 key={href}
                 href={href}
-                className={`text-sm transition hover:text-accent ${active ? "text-accent" : "text-fg-muted"}`}
+                className={`link-line text-[13px] tracking-[0.02em] transition hover:text-fg ${active ? "text-fg" : "text-fg-muted"}`}
               >
                 {l.label}
               </Link>
