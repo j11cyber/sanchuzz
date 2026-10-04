@@ -10,7 +10,7 @@ export const riseVariants: Variants = {
   show: (delay: number = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.75, ease: EXPO, delay } }),
 };
 
-type Tag = "div" | "section" | "p" | "h2" | "h3" | "li" | "ul" | "figure" | "span" | "article";
+type Tag = "div" | "section" | "p" | "h2" | "h3" | "li" | "ul" | "ol" | "dl" | "figure" | "span" | "article" | "nav";
 
 /**
  * Rises into place once when it scrolls into view (threshold 0.15, a little

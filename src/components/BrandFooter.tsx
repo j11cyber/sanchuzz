@@ -24,7 +24,16 @@ export default function BrandFooter({ brand, contact }: { brand: Brand; contact:
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <div className="font-display text-2xl text-fg">{brand.name}</div>
+            <div className={brand.key === "santus" ? "font-display text-4xl leading-none text-fg" : "font-display text-2xl text-fg"}>
+              {brand.key === "santus" ? (
+                <>
+                  Santus <span className="italic">Sabaoth</span>
+                </>
+              ) : (
+                brand.name
+              )}
+            </div>
+            {brand.key === "santus" && <div className="mt-2 text-xs text-accent-dim">Made by hand in {contact.location.split(",")[0]}</div>}
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-fg-muted/80">{brand.strapline}</p>
             {!isHouse && (
               <Link href="/" className="mt-5 inline-block text-xs text-fg-muted/60 transition hover:text-accent">

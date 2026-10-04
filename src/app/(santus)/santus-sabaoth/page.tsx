@@ -1,97 +1,93 @@
-import Image from "next/image";
 import Link from "next/link";
-import { getFeaturedProduct, getProductsBySection } from "@/lib/products";
-import { formatNaira } from "@/lib/money";
+import { getProductsBySection } from "@/lib/products";
 import { BRANDS, brandHref } from "@/lib/brands";
-import ParallaxImage from "@/components/ParallaxImage";
-import ProductCard from "@/components/ProductCard";
+import { getContactSettings } from "@/lib/site-settings";
+import { PHOTOS } from "@/lib/photos";
+import HeroCampaign from "@/components/house/HeroCampaign";
+import Lookbook from "@/components/santus/Lookbook";
+import ScrollImage from "@/components/motion/ScrollImage";
+import Words from "@/components/motion/Words";
+import Rise, { RiseGroup, RiseItem } from "@/components/motion/Rise";
+import Ambient from "@/components/motion/Ambient";
 
 const B = BRANDS.santus;
 
 /**
- * Santus Sabaoth landing. Structural version; the horizontal lookbook and
- * photography-led facelift arrive in Phase 6.
+ * Santus Sabaoth landing: the maker's atelier. A campaign hero in the
+ * atelier's warmer palette, the lookbook scrolling sideways, a word from the
+ * maker, and the commission invitation.
  */
 export default async function SantusLanding() {
-  const [featured, products] = await Promise.all([getFeaturedProduct("SANTUS_SABAOTH"), getProductsBySection("SANTUS_SABAOTH")]);
-  const recent = products.filter((p) => p.id !== featured?.id).slice(0, 4);
+  const [products, contact] = await Promise.all([getProductsBySection("SANTUS_SABAOTH"), getContactSettings()]);
+  const featured = products.filter((p) => p.featured);
+  const lookbook = [...featured, ...products.filter((p) => !p.featured)].slice(0, 7);
 
   return (
-    <div className="space-y-20 sm:space-y-28">
-      <section className="relative flex min-h-[80vh] items-end overflow-hidden">
-        <ParallaxImage src="https://picsum.photos/seed/santus-hero/1800/1200" alt="Santus Sabaoth atelier" fill priority sizes="100vw" className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/55 to-bg/10" />
-        <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 sm:px-8">
-          <h1 className="font-display text-5xl text-fg sm:text-7xl">Santus Sabaoth</h1>
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-fg-muted/85 sm:text-lg">
-            Every piece here is designed and made by one man. Tailoring, kaftans, agbada, shoes and bags, cut by the same hand from the
-            first sketch to the last stitch.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link href={brandHref(B, "/shop")} className="rounded-full bg-accent px-8 py-4 text-sm font-semibold text-bg transition hover:bg-accent-soft">
-              Shop the collection
-            </Link>
-            <Link href={brandHref(B, "/commission")} className="rounded-full border border-fg-muted/30 px-8 py-4 text-sm text-fg transition hover:border-accent hover:text-accent">
-              Commission a piece
-            </Link>
+    <div>
+      <HeroCampaign
+        image={PHOTOS.beretPortrait}
+        eyebrow={`Atelier · ${contact.location.split(",")[0]}`}
+        headline="Santus Sabaoth"
+        line="Every piece drawn, cut and finished by one hand. Ready to wear, or made to your measure."
+        links={[
+          { href: brandHref(B, "/shop"), label: "Shop the collection" },
+          { href: brandHref(B, "/commission"), label: "Commission a piece" },
+        ]}
+        card={featured[0] ? { href: brandHref(B, `/${featured[0].slug}`), label: "New from the bench", title: featured[0].name, image: featured[0].images[0] } : undefined}
+      />
+
+      <Lookbook products={lookbook} basePath={B.prefix} />
+
+      {/* A word from the maker */}
+      <section className="relative overflow-hidden border-t border-line">
+        <Ambient motes={false} />
+        <div className="relative mx-auto grid max-w-[110rem] gap-10 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-12 lg:gap-8 lg:px-12">
+          <div className="lg:col-span-5">
+            <ScrollImage src={PHOTOS.atelierCheckSuit} sizes="(min-width: 1024px) 40vw, 100vw" className="aspect-[4/5] bg-surface" parallax={8} zoom={1.08} />
+          </div>
+          <div className="lg:col-span-6 lg:col-start-7 lg:self-center">
+            <Rise as="p" className="text-sm text-fg-muted/60">
+              The maker
+            </Rise>
+            <Words as="h2" text="One hand, first sketch to last stitch." delay={0.1} className="mt-3 font-display text-4xl leading-[1.02] text-fg sm:text-6xl" />
+            <Rise as="p" delay={0.3} className="mt-6 max-w-lg text-base leading-relaxed text-fg-muted/85">
+              There is no design team and no outside label. The work sits between the soft shoulder of the Italian ateliers and the
+              proportions and cloth of Nigerian ceremonial dress, so it holds its line in a boardroom and moves properly at a wedding.
+            </Rise>
+            <Rise delay={0.42} className="mt-7">
+              <Link href={brandHref(B, "/about")} className="group inline-flex items-center gap-3 text-sm text-fg">
+                <span className="h-px w-4 bg-fg-muted/40 transition-[width,background-color] duration-300 group-hover:w-8 group-hover:bg-accent" />
+                About the maker
+              </Link>
+            </Rise>
           </div>
         </div>
       </section>
 
-      {featured && (
-        <section className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-end">
-            <Link href={brandHref(B, `/${featured.slug}`)} className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-surface sm:aspect-[5/4]">
-              {featured.images[0] && (
-                <Image src={featured.images[0]} alt={featured.name} fill sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover transition duration-700 hover:scale-[1.03]" />
-              )}
-            </Link>
-            <div>
-              <p className="text-sm text-accent">{featured.category}</p>
-              <h2 className="mt-3 font-display text-4xl text-fg sm:text-5xl">{featured.name}</h2>
-              <p className="mt-5 text-sm leading-relaxed text-fg-muted/80">{featured.description}</p>
-              <div className="mt-6 font-display text-2xl text-accent">{formatNaira(featured.price)}</div>
-              <Link href={brandHref(B, `/${featured.slug}`)} className="mt-6 inline-block rounded-full border border-line px-6 py-3 text-sm text-fg transition hover:border-accent hover:text-accent">
-                See the piece
+      {/* Commission */}
+      <section className="relative overflow-hidden border-t border-line">
+        <ScrollImage src={PHOTOS.windowpaneBowTie} sizes="100vw" className="h-[80svh] min-h-[30rem]" parallax={12} zoom={1.1} />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/90 via-deep/35 to-deep/15" />
+        <div className="absolute inset-x-0 bottom-0 px-5 pb-12 sm:px-8 sm:pb-16 lg:px-12">
+          <RiseGroup stagger={0.1} className="max-w-3xl">
+            <RiseItem as="p" className="text-sm text-fg-muted/70">
+              Made to measure
+            </RiseItem>
+            <RiseItem as="h2" className="mt-3 font-display text-4xl leading-[1.02] text-fg sm:text-6xl lg:text-7xl">
+              Anything in the collection, cut to you.
+            </RiseItem>
+            <RiseItem as="p" className="mt-5 max-w-lg text-base leading-relaxed text-fg-muted/85">
+              A measurement, a conversation about cloth and hardware, a fitting, then the piece. Three to eight weeks.
+            </RiseItem>
+            <RiseItem className="mt-8 flex flex-wrap gap-4">
+              <Link href={brandHref(B, "/commission")} className="btn-sheen relative inline-flex items-center overflow-hidden bg-fg px-6 py-3 text-sm text-bg">
+                Commission a piece
               </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {recent.length > 0 && (
-        <section className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="flex items-end justify-between">
-            <h2 className="font-display text-3xl text-fg sm:text-4xl">New from the atelier</h2>
-            <Link href={brandHref(B, "/shop")} className="text-sm text-accent hover:text-accent-soft">
-              Everything
-            </Link>
-          </div>
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 sm:gap-6">
-            {recent.map((p) => (
-              <ProductCard key={p.id} product={p} basePath={B.prefix} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">
-        <div className="grid gap-8 rounded-3xl border border-line bg-surface p-8 sm:p-12 md:grid-cols-2 md:items-center">
-          <div>
-            <h2 className="font-display text-3xl text-fg">Made by hand, to your measure</h2>
-            <p className="mt-4 text-sm leading-relaxed text-fg-muted/80">
-              Anything in the collection can be cut to you. Clothing, shoes and bags are commissioned the same way the line is made:
-              a measurement, a conversation about cloth and hardware, a fitting, then the piece.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row md:justify-end">
-            <Link href={brandHref(B, "/commission")} className="rounded-full bg-accent px-8 py-3.5 text-center text-sm font-semibold text-bg transition hover:bg-accent-soft">
-              Commission a piece
-            </Link>
-            <Link href={brandHref(B, "/about")} className="rounded-full border border-line px-6 py-3.5 text-center text-sm text-fg transition hover:border-accent hover:text-accent">
-              About the maker
-            </Link>
-          </div>
+              <Link href={brandHref(B, "/shop")} className="btn-sheen relative inline-flex items-center overflow-hidden border border-fg/40 px-6 py-3 text-sm text-fg">
+                Shop ready to wear
+              </Link>
+            </RiseItem>
+          </RiseGroup>
         </div>
       </section>
     </div>

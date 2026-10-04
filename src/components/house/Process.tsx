@@ -7,7 +7,7 @@ import { EXPO } from "@/components/motion/Rise";
 import Words from "@/components/motion/Words";
 import { usePauseOffscreen } from "@/components/motion/Ambient";
 
-export type ProcessStep = { number: string; title: string; body: string; href: string; cta: string };
+export type ProcessStep = { number: string; title: string; body: string; href?: string; cta?: string };
 
 /**
  * How the house works, as a lit diagram. The heading column pins on desktop
@@ -59,10 +59,12 @@ export default function Process({ title, intro, steps }: { title: string; intro:
                   <span className="font-mono text-xs text-accent-dim">{s.number}</span>
                   <h3 className="mt-2 font-display text-3xl leading-tight text-fg sm:text-4xl">{s.title}</h3>
                   <p className="mt-3 max-w-md text-sm leading-relaxed text-fg-muted/85 sm:text-base">{s.body}</p>
-                  <Link href={s.href} className="group/l mt-4 inline-flex items-center gap-3 text-sm text-fg">
-                    <span className="h-px w-4 bg-fg-muted/40 transition-[width,background-color] duration-300 group-hover/l:w-8 group-hover/l:bg-accent" />
-                    {s.cta}
-                  </Link>
+                  {s.href && s.cta && (
+                    <Link href={s.href} className="group/l mt-4 inline-flex items-center gap-3 text-sm text-fg">
+                      <span className="h-px w-4 bg-fg-muted/40 transition-[width,background-color] duration-300 group-hover/l:w-8 group-hover/l:bg-accent" />
+                      {s.cta}
+                    </Link>
+                  )}
                 </div>
               </div>
             </li>

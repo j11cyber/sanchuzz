@@ -34,7 +34,7 @@ export default function AddToCartButton({ product, compact = false }: { product:
 
   function handleAdd() {
     add();
-    if (!outOfStock) setTimeout(openCartDrawer, 300);
+    if (!outOfStock) setTimeout(openCartDrawer, 250);
   }
 
   function handleBuyNow() {
@@ -44,11 +44,7 @@ export default function AddToCartButton({ product, compact = false }: { product:
 
   if (compact) {
     return (
-      <button
-        onClick={handleAdd}
-        disabled={outOfStock}
-        className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-bg transition hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-40"
-      >
+      <button onClick={handleAdd} disabled={outOfStock} className="btn-sheen relative overflow-hidden bg-fg px-4 py-2 text-xs text-bg transition disabled:cursor-not-allowed disabled:opacity-40">
         {outOfStock ? "Sold out" : added ? "Added" : "Add to bag"}
       </button>
     );
@@ -58,7 +54,10 @@ export default function AddToCartButton({ product, compact = false }: { product:
     <div>
       {product.sizes.length > 0 && (
         <div>
-          <div className="text-xs text-fg-muted/60">Size</div>
+          <div className="flex items-baseline justify-between text-xs text-fg-muted/60">
+            <span>Size</span>
+            {size && <span className="text-fg-muted/80">{size}</span>}
+          </div>
           <div className="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-label="Size">
             {product.sizes.map((s) => (
               <button
@@ -67,8 +66,8 @@ export default function AddToCartButton({ product, compact = false }: { product:
                 role="radio"
                 aria-checked={size === s}
                 onClick={() => setSize(s)}
-                className={`rounded-lg border px-4 py-2 text-sm transition ${
-                  size === s ? "border-accent bg-accent text-bg" : "border-line text-fg-muted hover:border-accent hover:text-accent"
+                className={`relative min-w-11 border px-3 py-2 text-sm transition-colors duration-300 ${
+                  size === s ? "border-fg bg-fg text-bg" : "border-line text-fg-muted hover:border-fg hover:text-fg"
                 }`}
               >
                 {s}
@@ -78,18 +77,18 @@ export default function AddToCartButton({ product, compact = false }: { product:
         </div>
       )}
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <button
           onClick={handleAdd}
           disabled={outOfStock}
-          className="flex-1 rounded-full bg-accent px-8 py-3.5 text-sm font-semibold text-bg transition hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-sheen relative flex-1 overflow-hidden bg-fg px-8 py-3.5 text-sm font-medium text-bg transition disabled:cursor-not-allowed disabled:opacity-40"
         >
           {outOfStock ? "Out of stock" : added ? "Added to bag" : "Add to bag"}
         </button>
         <button
           onClick={handleBuyNow}
           disabled={outOfStock}
-          className="rounded-full border border-line px-6 py-3.5 text-sm text-fg transition hover:border-accent hover:text-accent disabled:opacity-40"
+          className="btn-sheen relative overflow-hidden border border-fg/40 px-6 py-3.5 text-sm text-fg transition hover:border-fg disabled:opacity-40"
         >
           Buy now
         </button>

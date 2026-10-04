@@ -65,8 +65,21 @@ export default function BrandNav() {
     >
       <div className="mx-auto flex max-w-[110rem] items-center justify-between gap-4 px-4 py-4 sm:px-8 lg:px-12">
         <div className="flex flex-col">
-          <Link href={home} className="font-display text-[1.15rem] uppercase leading-none tracking-[0.14em] text-fg transition hover:text-accent sm:text-[1.3rem]">
-            {brand.name}
+          <Link
+            href={home}
+            className={
+              brand.key === "santus"
+                ? "font-display text-[1.45rem] font-medium leading-none tracking-[-0.01em] text-fg transition hover:text-accent sm:text-[1.7rem]"
+                : "font-display text-[1.15rem] uppercase leading-none tracking-[0.14em] text-fg transition hover:text-accent sm:text-[1.3rem]"
+            }
+          >
+            {brand.key === "santus" ? (
+              <>
+                Santus <span className="italic">Sabaoth</span>
+              </>
+            ) : (
+              brand.name
+            )}
           </Link>
           {!isHouse && (
             <Link href="/" className="mt-1 text-[11px] text-fg-muted/60 transition hover:text-accent">
