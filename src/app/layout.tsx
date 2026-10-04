@@ -3,6 +3,7 @@ import "./globals.css";
 import { HOUSE_NAME } from "@/lib/brands";
 import SmoothScroll from "@/components/motion/SmoothScroll";
 import Intro from "@/components/motion/Intro";
+import MotionProvider from "@/components/motion/MotionProvider";
 
 export const metadata: Metadata = {
   title: {
@@ -22,15 +23,17 @@ export const viewport: Viewport = {
 /**
  * Bare shell. Each brand's route-group layout provides its own fonts, tokens,
  * navigation and footer so the three brands read as separate sites. Smooth
- * scrolling and the first-load intro are shared.
+ * scrolling, the motion provider and the first-load intro are shared.
  */
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
-        <SmoothScroll />
-        <Intro />
-        {children}
+        <MotionProvider>
+          <SmoothScroll />
+          <Intro />
+          {children}
+        </MotionProvider>
       </body>
     </html>
   );

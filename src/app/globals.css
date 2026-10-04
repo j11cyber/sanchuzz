@@ -703,6 +703,498 @@ html.intro-lock .rv {
   }
 }
 
+/* ------------------------------------------------------------------------
+   Campaign animation vocabulary (matched to the reference, dressed for a
+   fashion house). All transform/opacity; infinite loops pause off screen
+   via .anim-paused; everything stops with prefers-reduced-motion.
+   ------------------------------------------------------------------------ */
+:root {
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.anim-paused,
+.anim-paused *,
+.anim-paused ::before,
+.anim-paused ::after {
+  animation-play-state: paused !important;
+}
+
+/* Slow turning seal */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-slow {
+  animation: spin 140s linear infinite;
+  will-change: transform;
+}
+.spin-slow-reverse {
+  animation: spin 190s linear infinite reverse;
+  will-change: transform;
+}
+
+/* Light that breathes across the hero */
+@keyframes ray-shimmer {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+.ray-shimmer {
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 20% 10%, color-mix(in srgb, var(--brand-accent) 18%, transparent), transparent 70%),
+    radial-gradient(40% 60% at 85% 30%, color-mix(in srgb, var(--brand-accent) 10%, transparent), transparent 70%);
+  mix-blend-mode: screen;
+  animation: ray-shimmer 9s ease-in-out infinite;
+}
+
+/* Floating card, pulse ring, breathe */
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.float-soft {
+  animation: float-soft 9s ease-in-out infinite;
+}
+@keyframes pulse-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 2.4s ease-out infinite;
+}
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.breathe {
+  animation: breathe 8s ease-in-out infinite;
+}
+.glass {
+  background: linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)), color-mix(in srgb, var(--brand-deep) 80%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+}
+
+/* Drifting orbs and rising motes */
+@keyframes drift-a {
+  to {
+    transform: translate(14vw, 10vh) scale(1.12);
+  }
+}
+@keyframes drift-b {
+  to {
+    transform: translate(-12vw, -12vh) scale(0.92);
+  }
+}
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  will-change: transform;
+  pointer-events: none;
+}
+.orb-a {
+  width: 90vw;
+  height: 90vw;
+  top: -30vh;
+  left: -20vw;
+  background: radial-gradient(circle, color-mix(in srgb, var(--brand-accent) 22%, transparent), transparent 62%);
+  animation: drift-a 46s ease-in-out infinite alternate;
+}
+.orb-b {
+  width: 100vw;
+  height: 100vw;
+  bottom: -40vh;
+  right: -30vw;
+  background: radial-gradient(circle, rgba(140, 106, 67, 0.22), transparent 60%);
+  animation: drift-b 58s ease-in-out infinite alternate;
+}
+@keyframes mote-rise {
+  to {
+    transform: translateY(-50%);
+  }
+}
+@keyframes mote-sway {
+  from {
+    margin-left: -12px;
+  }
+  to {
+    margin-left: 12px;
+  }
+}
+.mote-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.9;
+}
+.mote-layer {
+  position: absolute;
+  inset: 0;
+  animation: mote-sway 18s ease-in-out infinite alternate;
+}
+.mote-layer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 200%;
+  background-repeat: repeat;
+  animation: mote-rise linear infinite;
+  will-change: transform;
+}
+.mote-layer-1::before {
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--brand-accent) 90%, white) 0 1px, transparent 1.6px);
+  background-size: 190px 240px;
+  animation-duration: 42s;
+}
+.mote-layer-2 {
+  animation-duration: 24s;
+}
+.mote-layer-2::before {
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--brand-accent) 80%, white) 0 1.4px, transparent 2.2px);
+  background-size: 260px 320px;
+  background-position: 90px 140px;
+  animation-duration: 64s;
+  opacity: 0.7;
+}
+.mote-layer-3 {
+  animation-duration: 30s;
+}
+.mote-layer-3::before {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 0.8px, transparent 1.4px);
+  background-size: 140px 180px;
+  background-position: 40px 60px;
+  animation-duration: 90s;
+  opacity: 0.5;
+}
+
+/* Diagram: steps rise in sequence, lines grow, a pulse flows down */
+.diagram-step {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease-expo),
+    transform 0.7s var(--ease-expo);
+  transition-delay: var(--step-delay, 0s);
+}
+.diagram.is-visible .diagram-step {
+  opacity: 1;
+  transform: none;
+}
+.diagram-line {
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.6s var(--ease-expo);
+  transition-delay: var(--step-delay, 0s);
+}
+.diagram.is-visible .diagram-line {
+  transform: scaleY(1);
+}
+@keyframes flow-down {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  4% {
+    opacity: 1;
+  }
+  17% {
+    opacity: 1;
+  }
+  20%,
+  100% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+.diagram-pulse {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 6px;
+  margin-left: -3px;
+  opacity: 0;
+  pointer-events: none;
+}
+.diagram-pulse::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--brand-accent-soft);
+  box-shadow: 0 0 12px 3px color-mix(in srgb, var(--brand-accent) 85%, transparent);
+}
+.diagram.is-visible .diagram-pulse {
+  animation: flow-down 3.6s linear infinite;
+  animation-delay: var(--pulse-delay, 0s);
+}
+.timeline-fill {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--brand-accent) 70%, transparent);
+}
+
+/* Button sheen and running border glint */
+.btn-sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--ease-expo);
+}
+.btn-sheen:hover::before,
+.btn-sheen:focus-visible::before {
+  transform: translateX(120%);
+}
+.border-glint {
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+}
+.border-glint > span {
+  position: absolute;
+  overflow: hidden;
+}
+.border-glint > span::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  animation-duration: 9s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+.border-glint__top,
+.border-glint__bottom {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+.border-glint__left,
+.border-glint__right {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+.border-glint__top {
+  top: 0;
+}
+.border-glint__bottom {
+  bottom: 0;
+}
+.border-glint__left {
+  left: 0;
+}
+.border-glint__right {
+  right: 0;
+}
+.border-glint__top::before,
+.border-glint__bottom::before {
+  background: linear-gradient(90deg, transparent, var(--brand-accent-soft), transparent);
+  width: 40%;
+}
+.border-glint__left::before,
+.border-glint__right::before {
+  background: linear-gradient(180deg, transparent, var(--brand-accent-soft), transparent);
+  height: 40%;
+}
+@keyframes glint-x {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(350%);
+  }
+}
+@keyframes glint-y {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(350%);
+  }
+}
+@keyframes glint-x-r {
+  from {
+    transform: translateX(350%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes glint-y-r {
+  from {
+    transform: translateY(350%);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+.border-glint__top::before {
+  animation-name: glint-x;
+}
+.border-glint__right::before {
+  animation-name: glint-y;
+  animation-delay: 2.25s;
+}
+.border-glint__bottom::before {
+  animation-name: glint-x-r;
+  animation-delay: 4.5s;
+}
+.border-glint__left::before {
+  animation-name: glint-y-r;
+  animation-delay: 6.75s;
+}
+
+/* Mobile navigation items drop in one after another */
+@keyframes nav-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.nav-item-in {
+  animation: nav-item-in 0.3s var(--ease-expo) both;
+}
+
+/* Scroll cue line */
+@keyframes scroll-cue {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+.scroll-cue {
+  animation: scroll-cue 1.9s ease-in-out infinite;
+}
+
+/* Product and chapter cards on hover: hairline grows, image lifts */
+.card-line {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: var(--brand-accent);
+  transform: scaleX(0.18);
+  transform-origin: left;
+  transition: transform 0.7s var(--ease-expo);
+}
+.pc:hover .card-line,
+.pc:focus-within .card-line,
+.group:hover .card-line {
+  transform: scaleX(1);
+}
+.hover-lift {
+  transition: transform 0.6s var(--ease-expo);
+}
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-6px);
+  }
+}
+
+/* Modals and drawers: in and out */
+@keyframes modal-in {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes modal-out {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+.modal-backdrop {
+  animation: fade-in 0.24s ease-out both;
+}
+.modal-card {
+  animation: modal-in 0.4s var(--ease-expo) both;
+}
+.modal-closing .modal-backdrop {
+  animation: fade-out 0.18s ease-in both;
+}
+.modal-closing .modal-card {
+  animation: modal-out 0.18s ease-in both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow,
+  .spin-slow-reverse,
+  .ray-shimmer,
+  .float-soft,
+  .pulse-ring,
+  .breathe,
+  .orb,
+  .mote-layer,
+  .mote-layer::before,
+  .diagram-pulse,
+  .border-glint > span::before,
+  .scroll-cue,
+  .modal-backdrop,
+  .modal-card {
+    animation: none !important;
+  }
+  .diagram-step,
+  .diagram-line {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .btn-sheen::before,
+  .card-line,
+  .hover-lift {
+    transition: none;
+  }
+}
+
 /* Clinical document styling (Sartorial Executive) */
 .rx-watermark {
   background-image: radial-gradient(

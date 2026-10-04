@@ -8,8 +8,9 @@ import type { Product } from "@/lib/products";
 import QuickView from "@/components/QuickView";
 
 /**
- * A product card. The photograph is the card. Hover shows the second angle
- * where one exists; "Quick view" opens the piece without leaving the page.
+ * A product card. The photograph is the card. On hover: the hairline above
+ * the title grows to full width, the card lifts, the photograph zooms a
+ * touch and swaps to the second angle. "Quick view" opens the piece in place.
  */
 export default function ProductCard({
   product,
@@ -29,7 +30,7 @@ export default function ProductCard({
   const href = `${basePath}/${product.slug}`;
 
   return (
-    <article className={`pc group ${className}`}>
+    <article className={`pc hover-lift group relative ${className}`}>
       <Link href={href} className="pc-media relative block aspect-[4/5] overflow-hidden bg-surface" aria-label={product.name}>
         {front ? (
           <Image src={front} alt="" fill priority={priority} sizes={sizes} className="object-cover" />
@@ -40,19 +41,21 @@ export default function ProductCard({
         {product.stock <= 0 && <span className="absolute left-3 top-3 bg-bg/85 px-2 py-1 text-[11px] text-fg-muted">Made to order</span>}
       </Link>
 
-      <div className="mt-3 flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <Link href={href} className="block truncate font-display text-lg leading-tight text-fg transition hover:text-accent sm:text-xl">
-            {product.name}
-          </Link>
-          <div className="mt-0.5 text-xs text-fg-muted/60">{product.brand ?? product.category}</div>
+      <div className="relative mt-4 pt-3">
+        <span className="card-line" aria-hidden />
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <Link href={href} className="block truncate font-display text-lg leading-tight text-fg transition hover:text-accent sm:text-xl">
+              {product.name}
+            </Link>
+            <div className="mt-0.5 text-xs text-fg-muted/60">{product.brand ?? product.category}</div>
+          </div>
+          <div className="shrink-0 text-sm text-fg">{formatNaira(product.price)}</div>
         </div>
-        <div className="shrink-0 text-sm text-fg">{formatNaira(product.price)}</div>
+        <button type="button" onClick={() => setOpen(true)} className="pc-quick link-line mt-2 text-xs text-fg-muted/80 hover:text-accent">
+          Quick view
+        </button>
       </div>
-
-      <button type="button" onClick={() => setOpen(true)} className="pc-quick link-line mt-2 text-xs text-fg-muted/80 hover:text-accent">
-        Quick view
-      </button>
 
       {open && <QuickView product={product} href={href} onClose={() => setOpen(false)} />}
     </article>

@@ -123,16 +123,22 @@ export default function BrandNav() {
       {mobileOpen && (
         <div className="border-t border-line bg-bg px-5 pb-8 pt-4 lg:hidden">
           <nav className="flex flex-col" aria-label="Primary mobile">
-            {brand.nav.map((l) => {
+            {brand.nav.map((l, i) => {
               const href = isHouse ? l.href : brandHref(brand, l.href);
               return (
-                <Link key={href} href={href} onClick={() => setMobileOpen(false)} className="border-b border-line/60 py-3 font-display text-lg text-fg hover:text-accent">
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className="nav-item-in border-b border-line/60 py-3 font-display text-2xl text-fg hover:text-accent"
+                  style={{ animationDelay: `${40 + i * 40}ms` }}
+                >
                   {l.label}
                 </Link>
               );
             })}
             {!isHouse && (
-              <Link href="/" onClick={() => setMobileOpen(false)} className="pt-4 text-sm text-fg-muted/70 hover:text-accent">
+              <Link href="/" onClick={() => setMobileOpen(false)} className="nav-item-in pt-4 text-sm text-fg-muted/70 hover:text-accent" style={{ animationDelay: `${40 + brand.nav.length * 40}ms` }}>
                 Back to {HOUSE_NAME}
               </Link>
             )}
