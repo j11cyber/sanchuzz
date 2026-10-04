@@ -3,72 +3,87 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import ScrollReveal from "@/components/ScrollReveal";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const article = await prisma.guideArticle.findUnique({ where: { slug } });
   if (!article) return {};
   return { title: article.title, description: article.excerpt };
 }
 
-export default async function GuideArticlePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function GuideArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = await prisma.guideArticle.findUnique({ where: { slug } });
   if (!article || !article.published) notFound();
 
-  const more = await prisma.guideArticle.findMany({
+  // Same category first, then the most recent of the rest, three in all.
+  const sameCategory = await prisma.guideArticle.findMany({
     where: { published: true, category: article.category, NOT: { id: article.id } },
+    orderBy: { createdAt: "desc" },
     take: 3,
   });
+  const others =
+    sameCategory.length < 3
+      ? await prisma.guideArticle.findMany({
+          where: { published: true, NOT: { id: { in: [article.id, ...sameCategory.map((a) => a.id)] } } },
+          orderBy: { createdAt: "desc" },
+          take: 3 - sameCategory.length,
+        })
+      : [];
+  const more = [...sameCategory, ...others];
+
+  const paragraphs = article.content.split(/\n{2,}|\n/).map((p) => p.trim()).filter(Boolean);
+  const [lead, ...body] = paragraphs;
 
   return (
-    <div>
+    <article>
+      <header className="mx-auto max-w-7xl px-5 pt-16 sm:px-8 sm:pt-24">
+        <Link href="/guide" className="text-sm text-fg-muted/60 transition hover:text-accent">
+          The Guide
+        </Link>
+        <div className="mt-8 grid gap-8 lg:grid-cols-12">
+          <h1 className="font-display text-4xl leading-[1.05] text-fg sm:text-6xl lg:col-span-8">{article.title}</h1>
+          <p className="text-sm text-fg-muted/60 lg:col-span-3 lg:col-start-10 lg:pt-3">
+            {article.category}
+            <br />
+            {new Date(article.createdAt).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+          </p>
+        </div>
+      </header>
+
       {article.coverImage && (
-        <div className="relative h-[50vh] w-full overflow-hidden">
-          <Image src={article.coverImage} alt={article.title} fill priority className="object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal-950 via-charcoal-950/40 to-charcoal-950/10" />
+        <div className="relative mt-12 aspect-[21/9] w-full overflow-hidden">
+          <Image src={article.coverImage} alt="" fill priority sizes="100vw" className="object-cover" />
         </div>
       )}
 
-      <div className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
-        <Link href="/guide" className="text-sm text-cream-dim/60 hover:text-gold">
-          ← The Guide
-        </Link>
-        <ScrollReveal>
-          <p className="mt-4 text-xs uppercase tracking-[0.3em] text-gold">{article.category}</p>
-          <h1 className="mt-3 font-display text-3xl text-cream sm:text-4xl">{article.title}</h1>
-          <p className="mt-6 whitespace-pre-line text-base leading-relaxed text-cream-dim/80">
-            {article.content}
-          </p>
-        </ScrollReveal>
+      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24">
+        <div className="grid gap-12 lg:grid-cols-12">
+          <p className="font-display text-2xl leading-snug text-fg lg:col-span-4">{article.excerpt}</p>
+          <div className="space-y-6 text-base leading-[1.75] text-fg-muted/90 lg:col-span-6 lg:col-start-6">
+            {lead && <p className="text-lg leading-[1.7] text-fg">{lead}</p>}
+            {body.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          </div>
+        </div>
 
         {more.length > 0 && (
-          <div className="mt-16 border-t border-charcoal-800 pt-10">
-            <h2 className="font-display text-xl text-cream">More on {article.category}</h2>
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <aside className="mt-24 border-t border-line pt-10 lg:ml-auto lg:max-w-3xl">
+            <h2 className="text-sm text-fg-muted/60">Keep reading</h2>
+            <ul className="mt-4 divide-y divide-line">
               {more.map((a) => (
-                <Link
-                  key={a.id}
-                  href={`/guide/${a.slug}`}
-                  className="rounded-xl border border-charcoal-800 bg-charcoal-900 p-4 transition hover:border-gold/50"
-                >
-                  <div className="font-display text-sm text-cream">{a.title}</div>
-                  <div className="mt-1 text-xs text-cream-dim/60">{a.excerpt}</div>
-                </Link>
+                <li key={a.id}>
+                  <Link href={`/guide/${a.slug}`} className="group flex items-baseline justify-between gap-6 py-4">
+                    <span className="font-display text-xl text-fg transition group-hover:text-accent sm:text-2xl">{a.title}</span>
+                    <span className="shrink-0 text-sm text-fg-muted/60">{a.category}</span>
+                  </Link>
+                </li>
               ))}
-            </div>
-          </div>
+            </ul>
+          </aside>
         )}
       </div>
-    </div>
+    </article>
   );
 }

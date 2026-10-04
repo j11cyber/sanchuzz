@@ -283,6 +283,193 @@ h4,
   border-radius: 999px;
 }
 
+/* ------------------------------------------------------------------------
+   House threshold: two doors, one per brand.
+   Layout is flex with animated flex-grow; images crossfade; the receding
+   door darkens and desaturates. Desktop side by side, touch stacked.
+   ------------------------------------------------------------------------ */
+.threshold {
+  --door-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --door-time: 900ms;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: calc(100svh - 4.5rem);
+  background: var(--brand-deep);
+  overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .threshold {
+    flex-direction: row;
+  }
+}
+
+.threshold-door {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  flex: 1 1 0;
+  min-height: 42svh;
+  overflow: hidden;
+  color: var(--brand-fg);
+  text-decoration: none;
+  outline: none;
+  transition: flex-grow var(--door-time) var(--door-ease);
+}
+.threshold-door[data-state="active"] {
+  flex-grow: 1.9;
+}
+.threshold-door[data-state="receding"] {
+  flex-grow: 0.75;
+}
+@media (min-width: 1024px) {
+  .threshold-door {
+    min-height: 0;
+  }
+  .threshold-door[data-state="active"] {
+    flex-grow: 1.55;
+  }
+  .threshold-door[data-state="receding"] {
+    flex-grow: 0.85;
+  }
+}
+
+.threshold-media {
+  position: absolute;
+  inset: 0;
+}
+.threshold-img {
+  transition:
+    opacity var(--door-time) var(--door-ease),
+    transform calc(var(--door-time) * 1.6) var(--door-ease),
+    filter var(--door-time) var(--door-ease);
+  transform: scale(1.02);
+  will-change: opacity, transform;
+}
+.threshold-img-active {
+  opacity: 0;
+}
+.threshold-door[data-state="active"] .threshold-img-rest {
+  opacity: 0;
+  transform: scale(1.06);
+}
+.threshold-door[data-state="active"] .threshold-img-active {
+  opacity: 1;
+  transform: scale(1);
+}
+.threshold-door[data-state="receding"] .threshold-img {
+  filter: saturate(0.4) brightness(0.55);
+  transform: scale(1.02);
+}
+
+.threshold-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(8, 8, 8, 0.82) 0%, rgba(8, 8, 8, 0.35) 40%, rgba(8, 8, 8, 0.05) 70%, transparent 100%);
+  transition: opacity var(--door-time) var(--door-ease);
+}
+.threshold-door[data-state="receding"] .threshold-shade {
+  opacity: 0.9;
+}
+
+.threshold-copy {
+  position: relative;
+  width: 100%;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+}
+.threshold-name {
+  font-size: clamp(2.6rem, 6.5vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  max-width: 14ch;
+  transition: transform var(--door-time) var(--door-ease);
+}
+.threshold-door[data-state="receding"] .threshold-name {
+  transform: translateY(0.35rem) scale(0.92);
+  transform-origin: left bottom;
+}
+.threshold-line {
+  max-width: 34ch;
+  margin-top: 1rem;
+  font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--brand-fg) 85%, transparent);
+  opacity: 0;
+  transform: translateY(0.6rem);
+  transition:
+    opacity calc(var(--door-time) * 0.7) var(--door-ease) 120ms,
+    transform calc(var(--door-time) * 0.7) var(--door-ease) 120ms;
+}
+.threshold-enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--brand-accent);
+  opacity: 0;
+  transform: translateY(0.6rem);
+  transition:
+    opacity calc(var(--door-time) * 0.7) var(--door-ease) 200ms,
+    transform calc(var(--door-time) * 0.7) var(--door-ease) 200ms;
+}
+.threshold-door[data-state="active"] .threshold-line,
+.threshold-door[data-state="active"] .threshold-enter {
+  opacity: 1;
+  transform: none;
+}
+/* With no pointer hovering, show the lines quietly so the hero reads at rest. */
+.threshold[data-active="none"] .threshold-line {
+  opacity: 0.75;
+  transform: none;
+}
+.threshold-door:focus-visible .threshold-copy {
+  outline: 2px solid var(--brand-accent);
+  outline-offset: -2px;
+}
+
+.threshold-seam {
+  position: absolute;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--brand-accent) 55%, transparent);
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  opacity: 0.6;
+}
+@media (min-width: 1024px) {
+  .threshold-seam {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: auto;
+  }
+  .threshold[data-active="0"] .threshold-seam,
+  .threshold[data-active="1"] .threshold-seam {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .threshold-door,
+  .threshold-img,
+  .threshold-shade,
+  .threshold-name,
+  .threshold-line,
+  .threshold-enter {
+    transition: none !important;
+  }
+  .threshold-img {
+    transform: none !important;
+  }
+}
+
 /* Clinical document styling (Sartorial Executive) */
 .rx-watermark {
   background-image: radial-gradient(

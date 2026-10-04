@@ -2,99 +2,82 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import ScrollReveal from "@/components/ScrollReveal";
 
 export const metadata: Metadata = {
   title: "The Guide",
-  description:
-    "Fashion care and management tips — how to care for and manage clothing, shoes, and bags.",
+  description: "How to care for what you wear: clothing, shoes and bags, plus wardrobe and fit fundamentals.",
 };
 
-export default async function GuidePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
+export default async function GuidePage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category } = await searchParams;
-  const articles = await prisma.guideArticle.findMany({
-    where: { published: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const articles = await prisma.guideArticle.findMany({ where: { published: true }, orderBy: { createdAt: "desc" } });
   const categories = Array.from(new Set(articles.map((a) => a.category)));
   const filtered = category ? articles.filter((a) => a.category === category) : articles;
+  const [feature, ...rest] = filtered;
 
   return (
-    <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-      <ScrollReveal>
-        <p className="text-xs uppercase tracking-[0.3em] text-gold">The Management Guide</p>
-        <h1 className="mt-4 font-display text-4xl text-cream sm:text-5xl">
-          Care for what you wear
-        </h1>
-        <p className="mt-5 max-w-xl text-sm leading-relaxed text-cream-dim/75">
-          Notes on maintaining clothing, shoes, and bags — plus wardrobe and
-          styling fundamentals. Have a specific question? The guide assistant
-          in the corner can help too.
+    <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24">
+      <div className="grid gap-8 lg:grid-cols-12">
+        <h1 className="font-display text-5xl leading-[1.02] text-fg sm:text-7xl lg:col-span-7">The Guide</h1>
+        <p className="text-base leading-relaxed text-fg-muted/80 lg:col-span-4 lg:col-start-9 lg:pt-4">
+          Plain advice on keeping clothing, shoes and bags in good order, and on the fundamentals of fit and colour. Ask the assistant in
+          the corner if you have a specific question.
         </p>
-      </ScrollReveal>
+      </div>
 
-      <ScrollReveal delay={100} className="snap-row no-scrollbar mt-10 sm:flex-wrap sm:overflow-visible">
-        <Link
-          href="/guide"
-          className={`shrink-0 rounded-full border px-4 py-1.5 text-xs uppercase tracking-widest transition ${
-            !category
-              ? "border-gold bg-gold text-charcoal-950"
-              : "border-charcoal-700 text-cream-dim hover:border-gold/60 hover:text-gold"
-          }`}
-        >
+      <nav className="mt-12 flex flex-wrap gap-x-6 gap-y-2 border-y border-line py-4 text-sm" aria-label="Categories">
+        <Link href="/guide" className={!category ? "border-b border-accent pb-0.5 text-fg" : "text-fg-muted/70 transition hover:text-accent"}>
           All
         </Link>
         {categories.map((c) => (
           <Link
             key={c}
             href={`/guide?category=${encodeURIComponent(c)}`}
-            className={`shrink-0 rounded-full border px-4 py-1.5 text-xs uppercase tracking-widest transition ${
-              category === c
-                ? "border-gold bg-gold text-charcoal-950"
-                : "border-charcoal-700 text-cream-dim hover:border-gold/60 hover:text-gold"
-            }`}
+            className={category === c ? "border-b border-accent pb-0.5 text-fg" : "text-fg-muted/70 transition hover:text-accent"}
           >
             {c}
           </Link>
         ))}
-      </ScrollReveal>
+      </nav>
 
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-        {filtered.map((a, i) => (
-          <ScrollReveal key={a.id} variant={i % 2 === 0 ? "left" : "right"} delay={(i % 3) * 100}>
-            <Link
-              href={`/guide/${a.slug}`}
-              className="group block h-full overflow-hidden rounded-xl border border-charcoal-800 bg-charcoal-900 shadow-soft transition hover:-translate-y-1 hover:shadow-lift sm:rounded-2xl"
-            >
-              {a.coverImage && (
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={a.coverImage}
-                    alt={a.title}
-                    fill
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                  />
+      {feature && (
+        <Link href={`/guide/${feature.slug}`} className="group relative mt-12 block min-h-[60svh] overflow-hidden">
+          {feature.coverImage && (
+            <Image src={feature.coverImage} alt="" fill priority sizes="100vw" className="object-cover transition duration-700 group-hover:scale-[1.02]" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-deep/90 via-deep/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-6 sm:p-12">
+            <span className="text-sm text-fg-muted/80">{feature.category}</span>
+            <h2 className="mt-2 max-w-3xl font-display text-3xl leading-tight text-fg sm:text-5xl">{feature.title}</h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-fg-muted/80 sm:text-base">{feature.excerpt}</p>
+          </div>
+        </Link>
+      )}
+
+      {rest.length > 0 && (
+        <ul className="mt-12 divide-y divide-line border-t border-line">
+          {rest.map((a) => (
+            <li key={a.id}>
+              <Link href={`/guide/${a.slug}`} className="group grid gap-5 py-7 sm:grid-cols-[7rem_1fr] sm:gap-8">
+                {a.coverImage ? (
+                  <div className="relative aspect-[4/5] w-28 overflow-hidden sm:w-full">
+                    <Image src={a.coverImage} alt="" fill sizes="112px" className="object-cover" />
+                  </div>
+                ) : (
+                  <div />
+                )}
+                <div className="self-center">
+                  <span className="text-sm text-fg-muted/60">{a.category}</span>
+                  <h2 className="mt-1 font-display text-2xl leading-tight text-fg transition group-hover:text-accent sm:text-3xl">{a.title}</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fg-muted/75">{a.excerpt}</p>
                 </div>
-              )}
-              <div className="p-3 sm:p-5">
-                <div className="text-[10px] uppercase tracking-widest text-gold sm:text-[11px]">
-                  {a.category}
-                </div>
-                <h2 className="mt-1.5 font-display text-sm text-cream sm:mt-2 sm:text-lg">
-                  {a.title}
-                </h2>
-                <p className="mt-1.5 hidden text-sm text-cream-dim/70 sm:mt-2 sm:block">
-                  {a.excerpt}
-                </p>
-              </div>
-            </Link>
-          </ScrollReveal>
-        ))}
-      </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {filtered.length === 0 && <p className="mt-16 text-sm text-fg-muted/60">Nothing published in this category yet.</p>}
     </div>
   );
 }

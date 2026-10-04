@@ -14,60 +14,58 @@ export default async function ContactPage() {
   const contact = await getContactSettings();
 
   return (
-    <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-      <div className="max-w-2xl">
-        <h1 className="font-display text-4xl text-fg sm:text-6xl">Contact the house</h1>
-        <p className="mt-4 text-sm leading-relaxed text-fg-muted/80 sm:text-base">For an order, a commission or a consultation. The fastest route is WhatsApp.</p>
-      </div>
+    <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24">
+      <h1 className="font-display text-5xl leading-[1.02] text-fg sm:text-7xl">Contact the house</h1>
+      <p className="mt-5 max-w-xl text-base leading-relaxed text-fg-muted/80">
+        For an order, a commission or a consultation. The fastest route is WhatsApp.
+      </p>
 
-      <div className="mt-12 grid gap-12 lg:grid-cols-2">
-        <div className="rounded-3xl border border-line bg-surface p-6 sm:p-10">
+      <div className="mt-16 grid gap-16 lg:grid-cols-12">
+        <dl className="divide-y divide-line border-y border-line lg:col-span-5">
+          <div className="py-6">
+            <dt className="text-sm text-fg-muted/60">The atelier</dt>
+            <dd className="mt-2 font-display text-2xl text-fg">{contact.location}</dd>
+            <dd className="mt-2 text-sm leading-relaxed text-fg-muted/75">Private appointments, scheduled in advance. {contact.locationNote}</dd>
+          </div>
+          <div className="py-6">
+            <dt className="text-sm text-fg-muted/60">Hours</dt>
+            <dd className="mt-2 space-y-0.5 text-sm text-fg-muted/85">
+              {contact.hours.map((h) => (
+                <div key={h}>{h}</div>
+              ))}
+            </dd>
+          </div>
+          <div className="py-6">
+            <dt className="text-sm text-fg-muted/60">Direct</dt>
+            <dd className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+              <a
+                href={whatsappLink(contact.whatsappNumber, `Hello ${HOUSE_NAME}, I have an enquiry.`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-b border-accent pb-0.5 text-fg transition hover:text-accent"
+              >
+                WhatsApp
+              </a>
+              <a href={`mailto:${contact.contactEmail}`} className="border-b border-line pb-0.5 text-fg-muted transition hover:border-accent hover:text-accent">
+                {contact.contactEmail}
+              </a>
+            </dd>
+          </div>
+          <div className="py-6">
+            <dt className="text-sm text-fg-muted/60">Or go straight to</dt>
+            <dd className="mt-3 space-y-2 text-sm">
+              <Link href={brandHref(BRANDS.sartorial, "/book")} className="block text-fg transition hover:text-accent">
+                Book a Sartorial Executive consultation
+              </Link>
+              <Link href={brandHref(BRANDS.santus, "/commission")} className="block text-fg transition hover:text-accent">
+                Commission a piece from Santus Sabaoth
+              </Link>
+            </dd>
+          </div>
+        </dl>
+
+        <div className="lg:col-span-6 lg:col-start-7">
           <ContactForm contact={contact} />
-        </div>
-
-        <div className="space-y-6">
-          <div className="space-y-6 rounded-3xl border border-line bg-surface p-6 sm:p-8">
-            <div>
-              <div className="text-xs text-accent">The atelier</div>
-              <h2 className="mt-1 font-display text-2xl text-fg">{contact.location}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-fg-muted/75">Private appointments, scheduled in advance. {contact.locationNote}</p>
-            </div>
-            <div className="border-t border-line pt-4">
-              <div className="text-xs text-accent">Hours</div>
-              <ul className="mt-1 space-y-0.5 text-sm text-fg-muted/75">
-                {contact.hours.map((h) => (
-                  <li key={h}>{h}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="border-t border-line pt-4">
-              <div className="text-xs text-accent">Direct</div>
-              <div className="mt-2 flex flex-wrap gap-3">
-                <a
-                  href={whatsappLink(contact.whatsappNumber, `Hello ${HOUSE_NAME}, I have an enquiry.`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-bg transition hover:bg-accent-soft"
-                >
-                  WhatsApp
-                </a>
-                <a href={`mailto:${contact.contactEmail}`} className="rounded-full border border-line px-4 py-2 text-sm text-fg-muted transition hover:border-accent hover:text-accent">
-                  {contact.contactEmail}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Link href={brandHref(BRANDS.sartorial, "/book")} className="rounded-2xl border border-line bg-surface p-5 transition hover:border-accent/50">
-              <div className="text-xs text-accent">Sartorial Executive</div>
-              <div className="mt-1 font-display text-lg text-fg">Book a consultation</div>
-            </Link>
-            <Link href={brandHref(BRANDS.santus, "/commission")} className="rounded-2xl border border-line bg-surface p-5 transition hover:border-accent/50">
-              <div className="text-xs text-accent">Santus Sabaoth</div>
-              <div className="mt-1 font-display text-lg text-fg">Commission a piece</div>
-            </Link>
-          </div>
         </div>
       </div>
     </div>
