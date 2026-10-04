@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatNaira } from "@/lib/money";
 import type { ServiceItemType } from "@/lib/services";
-import { depositOf } from "@/components/BookingForm";
+import { depositOf } from "@/lib/booking-options";
 import { BRANDS, brandHref } from "@/lib/brands";
 import type { ContactSettings } from "@/lib/contact";
 import BookingModal from "@/components/BookingModal";

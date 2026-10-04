@@ -2,6 +2,40 @@
 
 > *Diagnose. Prescribe. Transform.*
 
+> **Note (October 2026):** the site is being restructured into the three-brand
+> house described in [BUILD_BRIEF_V3.md](./BUILD_BRIEF_V3.md). Sections 1 to 3
+> below describe the earlier clinic-era build and will be rewritten in Phase 10.
+> The "Before launch" checklist and the setup sections are current.
+
+## Before launch
+
+Work through this list before the site takes real money or real bookings.
+
+### Paystack
+
+1. Create a Paystack business account and complete verification so live keys are issued.
+2. In the Paystack dashboard under Settings, API Keys and Webhooks, copy the **secret** and **public** keys.
+3. Set `PAYSTACK_SECRET_KEY` and `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` in Vercel (Production) and in `.env` locally. Use test keys (`sk_test_`, `pk_test_`) first, then switch to live keys.
+4. Register the webhook URL `https://<your-domain>/api/paystack/webhook`. It verifies the `x-paystack-signature` header and confirms `charge.success` for both product orders and service deposits.
+5. Set `NEXT_PUBLIC_SITE_URL` to the public origin so Paystack return URLs point at `/santus-sabaoth/order-confirmation`, `/sartorial-executive/order-confirmation` and `/sartorial-executive/booking-confirmation`.
+6. Run one test product order and one test service deposit end to end, then check the Order and Booking rows in admin.
+
+Until the secret key is set, product checkout returns a clear message with the order reference and a WhatsApp link, and service bookings are saved as enquiries with a message that online deposits are not yet switched on. Nothing is left pending.
+
+### Contact and content
+
+- Replace the placeholder WhatsApp number and email at `/admin/settings`.
+- Replace placeholder photography (every seeded image is a `picsum.photos` or Unsplash URL).
+- Confirm the real Santus Sabaoth product list and the luxury houses Sartorial Executive will carry.
+- Decide whether the launch offer (first 10 clients, 20% off) appears on the site.
+
+### Security
+
+- Set a long random `ADMIN_SESSION_SECRET` and change the seeded admin password.
+- See the admin hardening notes further down.
+
+---
+
 A Next.js platform for a Lagos-based luxury menswear styling house. It sells
 high-ticket personal styling services to male executives, wraps those services
 in a medical metaphor, and runs two small e-commerce storefronts alongside

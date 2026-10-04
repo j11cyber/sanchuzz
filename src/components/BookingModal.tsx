@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import BookingForm, { type BookableService } from "@/components/BookingForm";
+import BookingForm from "@/components/BookingForm";
+import type { BookableService } from "@/lib/booking-options";
 import type { ContactSettings } from "@/lib/contact";
 
 export default function BookingModal({
@@ -11,6 +12,7 @@ export default function BookingModal({
   contact,
   initialServiceSlug,
   initialOccasion,
+  checkupRef,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +20,7 @@ export default function BookingModal({
   contact: ContactSettings;
   initialServiceSlug?: string;
   initialOccasion?: string;
+  checkupRef?: string;
 }) {
   useEffect(() => {
     if (!isOpen) return;
@@ -43,7 +46,7 @@ export default function BookingModal({
           </button>
         </div>
         <div className="p-6">
-          <BookingForm services={services} contact={contact} initialServiceSlug={initialServiceSlug} initialOccasion={initialOccasion} />
+          <BookingForm services={services} contact={contact} initialServiceSlug={initialServiceSlug} initialOccasion={initialOccasion} checkupRef={checkupRef} />
         </div>
       </div>
     </div>

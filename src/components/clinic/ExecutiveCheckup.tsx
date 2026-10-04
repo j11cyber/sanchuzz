@@ -9,7 +9,7 @@ import { BRANDS, brandHref } from "@/lib/brands";
 import { whatsappLink, type ContactSettings } from "@/lib/contact";
 import type { PrescriptionPadSettings } from "@/lib/site-settings";
 import BookingModal from "@/components/BookingModal";
-import { depositOf, type BookableService } from "@/components/BookingForm";
+import { depositOf, type BookableService } from "@/lib/booking-options";
 
 const S = BRANDS.sartorial;
 
@@ -220,6 +220,7 @@ export default function ExecutiveCheckup({
           services={services}
           contact={contact}
           initialServiceSlug={result.treatmentPlan.serviceSlug}
+          checkupRef={result.patientRef}
         />
       </div>
     );

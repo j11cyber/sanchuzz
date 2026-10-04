@@ -1,10 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import { verifyTransaction } from "@/lib/paystack";
 
+/**
+ * Confirm a Paystack payment for an order of either type.
+ *
+ * Called from the return page and from the webhook; either may run first.
+ * An atomic claim (updateMany where status != PAID) means only one caller
+ * performs the side effects: stock is decremented once for product orders,
+ * and the linked booking is marked DEPOSIT_PAID once for service deposits.
+ */
 export async function confirmOrderPayment(reference: string) {
   const order = await prisma.order.findUnique({
     where: { reference },
-    include: { items: true },
+    include: { items: true, booking: true },
   });
   if (!order) return null;
 
@@ -18,19 +26,23 @@ export async function confirmOrderPayment(reference: string) {
     const transaction = await verifyTransaction(reference);
     const isPaid = transaction.status === "success";
 
-    // Atomic claim: only the first caller to flip status away from PENDING/FAILED
-    // decrements stock, so a near-simultaneous webhook + confirmation-page call
-    // can't double-decrement.
     const claim = await prisma.order.updateMany({
       where: { reference, status: { not: "PAID" } },
       data: { status: isPaid ? "PAID" : "FAILED" },
     });
 
     if (isPaid && claim.count > 0) {
-      for (const item of order.items) {
-        await prisma.product.update({
-          where: { id: item.productId },
-          data: { stock: { decrement: item.quantity } },
+      if (order.type === "PRODUCT") {
+        for (const item of order.items) {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
+      } else if (order.type === "SERVICE_DEPOSIT" && order.booking) {
+        await prisma.booking.update({
+          where: { id: order.booking.id },
+          data: { status: "DEPOSIT_PAID" },
         });
       }
     }
@@ -38,9 +50,8 @@ export async function confirmOrderPayment(reference: string) {
     console.warn("Paystack verification skipped or failed:", err);
   }
 
-  const updated = await prisma.order.findUnique({
+  return prisma.order.findUnique({
     where: { reference },
-    include: { items: true },
+    include: { items: true, booking: true },
   });
-  return updated;
 }
