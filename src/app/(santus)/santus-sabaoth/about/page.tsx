@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { BRANDS, brandHref } from "@/lib/brands";
 import { getContactSettings } from "@/lib/site-settings";
-import { PHOTOS } from "@/lib/photos";
+import { SANTUS } from "@/lib/photos";
 import ScrollImage from "@/components/motion/ScrollImage";
 import Words from "@/components/motion/Words";
 import Rise, { RiseGroup, RiseItem } from "@/components/motion/Rise";
@@ -26,7 +26,7 @@ export default async function AboutTheMakerPage() {
   return (
     <div>
       <section className="relative overflow-hidden">
-        <ScrollImage src={PHOTOS.beretPortrait} sizes="100vw" priority className="h-[88svh] min-h-[32rem]" parallax={10} zoom={1.1} />
+        <ScrollImage src={SANTUS.aboutHero} sizes="100vw" priority className="h-[88svh] min-h-[32rem]" parallax={10} zoom={1.1} />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/95 via-deep/30 to-deep/10" />
         <div className="absolute inset-x-0 bottom-0 px-5 pb-12 sm:px-8 sm:pb-16 lg:px-12">
           <Rise as="p" className="text-sm text-fg-muted/70">
@@ -62,7 +62,7 @@ export default async function AboutTheMakerPage() {
       </section>
 
       <section className="grid gap-px bg-line sm:grid-cols-3">
-        {[PHOTOS.atelierCheckSuit, PHOTOS.windowpaneBowTie, PHOTOS.tanOxfords].map((src, i) => (
+        {SANTUS.aboutStrip.map((src, i) => (
           <div key={i} className="bg-bg">
             <ScrollImage src={src} sizes="(min-width: 640px) 33vw, 100vw" className="aspect-[4/5]" parallax={6} zoom={1.06} />
           </div>

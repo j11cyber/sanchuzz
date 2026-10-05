@@ -243,19 +243,79 @@ h4,
   --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-/* Page enter: every navigation settles in rather than snapping. */
-@keyframes page-in {
+/* Route changes: the old page fades and drops away quickly, the new one
+   settles in a touch later. Product photographs morph between pages by
+   name. The header stays anchored. Browsers without the View Transition API
+   swap instantly. */
+@keyframes vt-fade {
   from {
     opacity: 0;
-    transform: translateY(12px);
   }
   to {
     opacity: 1;
+  }
+}
+@keyframes vt-rise {
+  from {
+    transform: translateY(14px);
+  }
+  to {
     transform: none;
   }
 }
-.page-enter {
-  animation: page-in 0.7s var(--ease-out) both;
+@keyframes vt-drop {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-10px);
+  }
+}
+::view-transition-old(.page-out) {
+  animation:
+    180ms ease-in both vt-fade reverse,
+    260ms ease-in both vt-drop;
+}
+::view-transition-new(.page-in) {
+  animation:
+    420ms var(--ease-out) 120ms both vt-fade,
+    600ms var(--ease-out) 60ms both vt-rise;
+}
+::view-transition-group(.product-morph) {
+  animation-duration: 520ms;
+  animation-timing-function: var(--ease-out);
+}
+::view-transition-image-pair(.product-morph) {
+  animation-name: vt-via-blur;
+}
+@keyframes vt-via-blur {
+  30% {
+    filter: blur(2px);
+  }
+}
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* Custom cursor: hide the native pointer only over marked targets. */
+html.has-cursor [data-cursor],
+html.has-cursor [data-cursor] * {
+  cursor: none;
 }
 
 /* First-load intro: the house name settles on a curtain, the curtain lifts. */
@@ -464,7 +524,6 @@ html.intro-lock .rv {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-enter,
   .intro-word,
   .dialog-in {
     animation: none;
@@ -538,32 +597,36 @@ html.intro-lock .rv {
   }
 }
 
+.threshold-door-wrap {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 42svh;
+  transition: flex-grow var(--door-time) var(--door-ease);
+}
+.threshold-door-wrap[data-state="active"] {
+  flex-grow: 1.9;
+}
+.threshold-door-wrap[data-state="receding"] {
+  flex-grow: 0.75;
+}
 .threshold-door {
   position: relative;
   display: flex;
   align-items: flex-end;
   flex: 1 1 0;
-  min-height: 42svh;
   overflow: hidden;
   color: var(--brand-fg);
   text-decoration: none;
   outline: none;
-  transition: flex-grow var(--door-time) var(--door-ease);
-}
-.threshold-door[data-state="active"] {
-  flex-grow: 1.9;
-}
-.threshold-door[data-state="receding"] {
-  flex-grow: 0.75;
 }
 @media (min-width: 1024px) {
-  .threshold-door {
+  .threshold-door-wrap {
     min-height: 0;
   }
-  .threshold-door[data-state="active"] {
+  .threshold-door-wrap[data-state="active"] {
     flex-grow: 1.55;
   }
-  .threshold-door[data-state="receding"] {
+  .threshold-door-wrap[data-state="receding"] {
     flex-grow: 0.85;
   }
 }

@@ -15,6 +15,9 @@ import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 import { DEFAULT_CONTACT } from "../src/lib/contact";
 import { DEFAULT_PRESCRIPTION_PAD, DEFAULT_SARTORIAL_CONTENT, SECTION_KEYS } from "../src/lib/site-settings";
+import { DAILY_CLOTH, FEATURED_PRODUCTS, GUIDE_COVERS, PRODUCT_PLACEHOLDERS } from "../src/lib/photos";
+
+const FEATURED = new Set(FEATURED_PRODUCTS);
 
 const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
 if (!connectionString) throw new Error("Set DIRECT_URL or DATABASE_URL");
@@ -25,8 +28,6 @@ const prisma = new PrismaClient({ adapter });
 
 // TODO: real photo. Placeholder imagery until product photography arrives.
 const IMG = (seed: string) => `https://picsum.photos/seed/${seed}/900/1100`;
-// Curated Unsplash placeholders (see src/lib/photos.ts for the full list and licence note).
-const PHOTO = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=2000&q=80`;
 
 /* ------------------------------------------------------------- products */
 
@@ -50,58 +51,15 @@ const sartorialProducts = [
   { name: "Executive Attaché Briefcase", slug: "executive-attache-briefcase", brand: "Santus Sabaoth", category: "Bags", price: 210000, description: "Structured full-grain leather attaché with brushed brass hardware and a hand-stitched gusset.", images: [IMG("sart-bag-1"), IMG("sart-bag-2")], sizes: ["One Size"], stock: 6, featured: false },
 ];
 
-/* Curated placeholder pairs [front, second angle] until product photography arrives. TODO: real photo. */
-const P = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1400&q=80`;
-const navyButtoning = P("1507679799987-c73779587ccf");
-const adjustingJacket = P("1544022613-e87ca75a784a");
-const pinstripeDB = P("1480429370139-e0132c086e2a");
-const flatLay = P("1593030761757-71fae45fa0e7");
-const tanOxfords = P("1614252235316-8c857d38b5f4");
-const windowpaneBowTie = P("1600091166971-7f9faad6c1e2");
-const blackSuitBrick = P("1598808503746-f34c53b9323e");
-const darkSuitRedTie = P("1519085360753-af0119f7cbe7");
-const blackSuitStreet = P("1617127365659-c47fa864d8bc");
-const atelierCheckSuit = P("1521341057461-6eb5f40b07ab");
-const shawlKnit = P("1506794778202-cad84cf45f1d");
-const burgundyKnit = P("1506634572416-48cdfe530110");
-const hangingWarm = P("1445205170230-053b83016050");
-
-const PLACEHOLDER_IMAGES: Record<string, string[]> = {
-  "obsidian-tailored-blazer": [navyButtoning, adjustingJacket],
-  "charcoal-wool-trousers": [pinstripeDB, flatLay],
-  "gold-stitched-oxford-shirt": [adjustingJacket, navyButtoning],
-  "handcrafted-leather-loafers": [tanOxfords, flatLay],
-  "sabaoth-signature-kaftan": [shawlKnit, burgundyKnit],
-  "ivory-linen-agbada-set": [hangingWarm, atelierCheckSuit],
-  "woven-raffia-tote": [hangingWarm],
-  "sartorial-signature-overcoat": [darkSuitRedTie, blackSuitStreet],
-  "milano-two-piece-suit": [windowpaneBowTie, blackSuitBrick],
-  "whole-cut-oxford-shoe": [tanOxfords, flatLay],
-  "sartorial-silk-evening-shirt": [blackSuitBrick, blackSuitStreet],
-  "onyx-crocodile-embossed-belt": [flatLay],
-  "cufflink-set-onyx-gold": [adjustingJacket],
-  "executive-attache-briefcase": [darkSuitRedTie],
-};
-
-/** Pieces shown on the house homepage and brand landings. */
-const FEATURED = new Set([
-  "obsidian-tailored-blazer",
-  "charcoal-wool-trousers",
-  "handcrafted-leather-loafers",
-  "sartorial-signature-overcoat",
-  "milano-two-piece-suit",
-  "whole-cut-oxford-shoe",
-]);
-
 /* ---------------------------------------------------------------- guide */
 
 const guideArticles = [
-  { title: "The Five-Minute Suit Care Routine", slug: "five-minute-suit-care-routine", category: "Clothing Care", excerpt: "Keep a tailored suit sharp between cleanings with a daily routine.", content: "A well-tailored suit is an investment, and most of what damages it happens between wears, not during them. Brush the jacket and trousers with a natural-bristle clothes brush after every wear to lift dust before it settles into the fibres. Hang the suit on a curved wooden hanger, never wire, to keep the shoulder line. Rest it at least 24 hours between wears so the wool recovers. Steam rather than iron where you can, and dry-clean sparingly, no more than two or three times a season, because the solvents break down natural fibres over time.", coverImage: PHOTO("1507679799987-c73779587ccf") },
-  { title: "Reading Leather: How to Judge a Shoe Before You Buy", slug: "reading-leather-before-you-buy", category: "Shoe Care", excerpt: "Full-grain, top-grain, corrected. What the grade actually tells you.", content: "Full-grain leather keeps the outermost layer of the hide with its natural markings and develops a rich patina with age. Top-grain has that layer sanded away for a uniform look but ages less interestingly. Corrected-grain is heavily processed and coated, trading character for consistency. Look at the grain under raised light: natural, irregular texture signals full-grain; a perfectly uniform surface usually means corrected. Press a thumb into the leather. Full-grain shows a faint impression that slowly fades, a sign the fibres are intact.", coverImage: PHOTO("1614252235316-8c857d38b5f4") },
-  { title: "Storing Bags So They Keep Their Shape", slug: "storing-bags-so-they-keep-their-shape", category: "Bag Care", excerpt: "Stuffing, humidity and the shelf position that saves a structured bag.", content: "Structured bags lose their shape fastest from poor storage, not use. Stuff the body loosely with acid-free tissue or a cotton insert, never plastic bags, which trap moisture and transfer colour. Store bags upright rather than stacked, out of direct sunlight, which dries and cracks leather. In humid climates add a small silica packet inside the dust bag. Rotate bags in regular use so no single piece sits under constant strap tension.", coverImage: PHOTO("1445205170230-053b83016050") },
-  { title: "Building a Ten-Piece Capsule Wardrobe", slug: "building-a-ten-piece-capsule-wardrobe", category: "Wardrobe Building", excerpt: "Ten pieces, engineered to combine into more than twenty outfits.", content: "A capsule wardrobe works by maximising combinations, not by minimising pieces for its own sake. Start with a neutral base: one navy suit, one charcoal trouser, two dress shirts in white and pale blue, and a blazer that is not part of the suit. Add one knit layer, one pair of dark denim, one overcoat and two pairs of shoes, a derby and a loafer. Every piece should pair with at least three others in the set. Build outward only once you have worn the core ten enough to know what is actually missing.", coverImage: PHOTO("1593030761757-71fae45fa0e7") },
-  { title: "Matching Colour Temperature to Skin Undertone", slug: "matching-color-temperature-to-skin-undertone", category: "Color & Styling", excerpt: "Why the same navy flatters one man and washes out another.", content: "Every colour has a temperature, warm or cool, and matching it to your skin's undertone is what makes an outfit look intentional. Check the veins on your wrist in daylight: green suggests warm, blue or purple suggests cool, and if it is hard to tell you likely lean neutral. Warm undertones are flattered by camel, olive and warm burgundy; cool undertones by charcoal, true navy and icy blue. Neutral undertones can borrow from both. A starting point, not a rule. Fit and cut matter more than any colour chart.", coverImage: PHOTO("1506634572416-48cdfe530110") },
-  { title: "Dressing for Your Build: Proportion Over Size", slug: "dressing-for-your-build-proportion-over-size", category: "Body Type Styling", excerpt: "The tailoring adjustments that matter more than the number on the tag.", content: "Fit is proportion, not size. Shoulder seams should sit exactly at the edge of your natural shoulder. That is the one measurement tailoring cannot easily fix, so get it right at purchase. Jacket length should cover the seat but show most of the leg. Trouser break should be minimal to none for a cleaner, longer line. Taller, leaner builds carry more pattern and layering; broader builds benefit from single-breasted cuts and vertical lines. None of this hides a body type. It directs the eye deliberately.", coverImage: PHOTO("1544022613-e87ca75a784a") },
+  { title: "The Five-Minute Suit Care Routine", slug: "five-minute-suit-care-routine", category: "Clothing Care", excerpt: "Keep a tailored suit sharp between cleanings with a daily routine.", content: "A well-tailored suit is an investment, and most of what damages it happens between wears, not during them. Brush the jacket and trousers with a natural-bristle clothes brush after every wear to lift dust before it settles into the fibres. Hang the suit on a curved wooden hanger, never wire, to keep the shoulder line. Rest it at least 24 hours between wears so the wool recovers. Steam rather than iron where you can, and dry-clean sparingly, no more than two or three times a season, because the solvents break down natural fibres over time." },
+  { title: "Reading Leather: How to Judge a Shoe Before You Buy", slug: "reading-leather-before-you-buy", category: "Shoe Care", excerpt: "Full-grain, top-grain, corrected. What the grade actually tells you.", content: "Full-grain leather keeps the outermost layer of the hide with its natural markings and develops a rich patina with age. Top-grain has that layer sanded away for a uniform look but ages less interestingly. Corrected-grain is heavily processed and coated, trading character for consistency. Look at the grain under raised light: natural, irregular texture signals full-grain; a perfectly uniform surface usually means corrected. Press a thumb into the leather. Full-grain shows a faint impression that slowly fades, a sign the fibres are intact." },
+  { title: "Storing Bags So They Keep Their Shape", slug: "storing-bags-so-they-keep-their-shape", category: "Bag Care", excerpt: "Stuffing, humidity and the shelf position that saves a structured bag.", content: "Structured bags lose their shape fastest from poor storage, not use. Stuff the body loosely with acid-free tissue or a cotton insert, never plastic bags, which trap moisture and transfer colour. Store bags upright rather than stacked, out of direct sunlight, which dries and cracks leather. In humid climates add a small silica packet inside the dust bag. Rotate bags in regular use so no single piece sits under constant strap tension." },
+  { title: "Building a Ten-Piece Capsule Wardrobe", slug: "building-a-ten-piece-capsule-wardrobe", category: "Wardrobe Building", excerpt: "Ten pieces, engineered to combine into more than twenty outfits.", content: "A capsule wardrobe works by maximising combinations, not by minimising pieces for its own sake. Start with a neutral base: one navy suit, one charcoal trouser, two dress shirts in white and pale blue, and a blazer that is not part of the suit. Add one knit layer, one pair of dark denim, one overcoat and two pairs of shoes, a derby and a loafer. Every piece should pair with at least three others in the set. Build outward only once you have worn the core ten enough to know what is actually missing." },
+  { title: "Matching Colour Temperature to Skin Undertone", slug: "matching-color-temperature-to-skin-undertone", category: "Color & Styling", excerpt: "Why the same navy flatters one man and washes out another.", content: "Every colour has a temperature, warm or cool, and matching it to your skin's undertone is what makes an outfit look intentional. Check the veins on your wrist in daylight: green suggests warm, blue or purple suggests cool, and if it is hard to tell you likely lean neutral. Warm undertones are flattered by camel, olive and warm burgundy; cool undertones by charcoal, true navy and icy blue. Neutral undertones can borrow from both. A starting point, not a rule. Fit and cut matter more than any colour chart." },
+  { title: "Dressing for Your Build: Proportion Over Size", slug: "dressing-for-your-build-proportion-over-size", category: "Body Type Styling", excerpt: "The tailoring adjustments that matter more than the number on the tag.", content: "Fit is proportion, not size. Shoulder seams should sit exactly at the edge of your natural shoulder. That is the one measurement tailoring cannot easily fix, so get it right at purchase. Jacket length should cover the seat but show most of the leg. Trouser break should be minimal to none for a cleaner, longer line. Taller, leaner builds carry more pattern and layering; broader builds benefit from single-breasted cuts and vertical lines. None of this hides a body type. It directs the eye deliberately." },
 ];
 
 /* ------------------------------------------------------------- services */
@@ -134,7 +92,7 @@ async function main() {
         section: "SANTUS_SABAOTH",
         brand: "Santus Sabaoth",
         ...p,
-        images: JSON.stringify(PLACEHOLDER_IMAGES[p.slug] ?? p.images),
+        images: JSON.stringify(PRODUCT_PLACEHOLDERS[p.slug] ?? p.images),
         sizes: JSON.stringify(p.sizes),
         featured: FEATURED.has(p.slug),
       },
@@ -147,7 +105,7 @@ async function main() {
       create: {
         section: "SARTORIAL_EXECUTIVE",
         ...p,
-        images: JSON.stringify(PLACEHOLDER_IMAGES[p.slug] ?? p.images),
+        images: JSON.stringify(PRODUCT_PLACEHOLDERS[p.slug] ?? p.images),
         sizes: JSON.stringify(p.sizes),
         featured: FEATURED.has(p.slug),
       },
@@ -156,14 +114,14 @@ async function main() {
 
   console.log("Guide articles (create if missing)");
   for (const a of guideArticles) {
-    await prisma.guideArticle.upsert({ where: { slug: a.slug }, update: {}, create: { ...a, published: true } });
+    await prisma.guideArticle.upsert({ where: { slug: a.slug }, update: {}, create: { ...a, coverImage: GUIDE_COVERS[a.slug] ?? null, published: true } });
   }
 
   console.log("Daily picks (create if none)");
   if ((await prisma.dailyPick.count({ where: { type: "CLOTH" } })) === 0) {
     const blazer = await prisma.product.findUnique({ where: { slug: "obsidian-tailored-blazer" } });
     await prisma.dailyPick.create({
-      data: { type: "CLOTH", title: "Obsidian Tailored Blazer", description: "Today's pick pairs the Obsidian Blazer with charcoal trousers and a pale-blue Oxford for a boardroom-to-dinner day.", imageUrl: PHOTO("1600091166971-7f9faad6c1e2"), productId: blazer?.id },
+      data: { type: "CLOTH", title: "Obsidian Tailored Blazer", description: "Today's pick pairs the Obsidian Blazer with charcoal trousers and a pale-blue Oxford for a boardroom-to-dinner day.", imageUrl: DAILY_CLOTH, productId: blazer?.id },
     });
   }
   if ((await prisma.dailyPick.count({ where: { type: "COLOR" } })) === 0) {

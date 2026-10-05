@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getProductsBySection } from "@/lib/products";
 import { BRANDS, brandHref } from "@/lib/brands";
 import { getContactSettings } from "@/lib/site-settings";
-import { PHOTOS } from "@/lib/photos";
+import { SANTUS } from "@/lib/photos";
 import HeroCampaign from "@/components/house/HeroCampaign";
 import Lookbook from "@/components/santus/Lookbook";
 import ScrollImage from "@/components/motion/ScrollImage";
@@ -25,7 +25,7 @@ export default async function SantusLanding() {
   return (
     <div>
       <HeroCampaign
-        image={PHOTOS.beretPortrait}
+        image={SANTUS.hero}
         eyebrow={`Atelier · ${contact.location.split(",")[0]}`}
         headline="Santus Sabaoth"
         line="Every piece drawn, cut and finished by one hand. Ready to wear, or made to your measure."
@@ -43,7 +43,7 @@ export default async function SantusLanding() {
         <Ambient motes={false} />
         <div className="relative mx-auto grid max-w-[110rem] gap-10 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-12 lg:gap-8 lg:px-12">
           <div className="lg:col-span-5">
-            <ScrollImage src={PHOTOS.atelierCheckSuit} sizes="(min-width: 1024px) 40vw, 100vw" className="aspect-[4/5] bg-surface" parallax={8} zoom={1.08} />
+            <ScrollImage src={SANTUS.maker} sizes="(min-width: 1024px) 40vw, 100vw" className="aspect-[4/5] bg-surface" parallax={8} zoom={1.08} />
           </div>
           <div className="lg:col-span-6 lg:col-start-7 lg:self-center">
             <Rise as="p" className="text-sm text-fg-muted/60">
@@ -66,7 +66,7 @@ export default async function SantusLanding() {
 
       {/* Commission */}
       <section className="relative overflow-hidden border-t border-line">
-        <ScrollImage src={PHOTOS.windowpaneBowTie} sizes="100vw" className="h-[80svh] min-h-[30rem]" parallax={12} zoom={1.1} />
+        <ScrollImage src={SANTUS.commissionInvite} sizes="100vw" className="h-[80svh] min-h-[30rem]" parallax={12} zoom={1.1} />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/90 via-deep/35 to-deep/15" />
         <div className="absolute inset-x-0 bottom-0 px-5 pb-12 sm:px-8 sm:pb-16 lg:px-12">
           <RiseGroup stagger={0.1} className="max-w-3xl">

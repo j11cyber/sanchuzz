@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useBrand } from "@/components/brand-context";
+import { HouseWordmark, Monogram, SantusWordmark, SartorialWordmark } from "@/components/brand/Logo";
 import { brandHref, HOUSE_NAME } from "@/lib/brands";
 import { useCartStore, cartCount } from "@/lib/cart-store";
 import { useUiStore } from "@/lib/ui-store";
@@ -59,26 +60,26 @@ export default function BrandNav() {
 
   return (
     <header
+      style={{ viewTransitionName: "site-header" }}
       className={`sticky top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
         scrolled ? "border-line/80 bg-bg/90 backdrop-blur-md" : "border-transparent bg-transparent"
       }`}
     >
       <div className="mx-auto flex max-w-[110rem] items-center justify-between gap-4 px-4 py-4 sm:px-8 lg:px-12">
         <div className="flex flex-col">
-          <Link
-            href={home}
-            className={
-              brand.key === "santus"
-                ? "font-display text-[1.45rem] font-medium leading-none tracking-[-0.01em] text-fg transition hover:text-accent sm:text-[1.7rem]"
-                : "font-display text-[1.15rem] uppercase leading-none tracking-[0.14em] text-fg transition hover:text-accent sm:text-[1.3rem]"
-            }
-          >
+          <Link href={home} className="block text-fg transition hover:text-accent" aria-label={brand.name}>
             {brand.key === "santus" ? (
-              <>
-                Santus <span className="italic">Sabaoth</span>
-              </>
+              <SantusWordmark className="h-8 w-auto sm:h-9" />
+            ) : brand.key === "sartorial" ? (
+              <SartorialWordmark className="h-8 w-auto sm:h-9" />
             ) : (
-              brand.name
+              <>
+                <HouseWordmark className="hidden h-8 w-auto sm:block sm:h-9" />
+                <span className="flex items-center gap-2 sm:hidden">
+                  <Monogram className="h-8 w-8" />
+                  <HouseWordmark withMark={false} className="h-6 w-auto" />
+                </span>
+              </>
             )}
           </Link>
           {!isHouse && (

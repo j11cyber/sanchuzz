@@ -1,20 +1,21 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { m, useInView, useScroll, useTransform } from "motion/react";
 import { EXPO } from "@/components/motion/Rise";
 import Words from "@/components/motion/Words";
 import { usePauseOffscreen } from "@/components/motion/Ambient";
 
-export type ProcessStep = { number: string; title: string; body: string; href?: string; cta?: string };
+export type ProcessStep = { number: string; title: string; body: string; href?: string; cta?: string; image?: string };
 
 /**
- * How the house works, as a lit diagram. The heading column pins on desktop
- * while the steps scroll past. When the list enters view, each step rises in
- * turn, the connecting lines grow down from the previous step, a gold pulse
- * then flows down each line continuously, and a fill bar on the left tracks
- * how far through the sequence you have scrolled.
+ * A lit diagram. The heading column pins on desktop while the steps scroll
+ * past. When the list enters view, each step rises in turn, the connecting
+ * lines grow down from the previous step, a gold pulse then flows down each
+ * line continuously, and a fill bar on the left tracks how far through the
+ * sequence you have scrolled. Each step may carry a small photograph.
  */
 export default function Process({ title, intro, steps }: { title: string; intro: string; steps: ProcessStep[] }) {
   const listRef = useRef<HTMLOListElement>(null);
@@ -36,7 +37,6 @@ export default function Process({ title, intro, steps }: { title: string; intro:
       </div>
 
       <div ref={pauseRef} className="relative lg:col-span-6 lg:col-start-7">
-        {/* Scroll-tracked fill bar */}
         <div className="absolute bottom-6 left-0 top-6 hidden w-px bg-line sm:block" aria-hidden>
           <m.div style={{ scaleY: fill }} className="timeline-fill absolute inset-0 origin-top bg-gradient-to-b from-accent to-accent/40" />
         </div>
@@ -56,8 +56,17 @@ export default function Process({ title, intro, steps }: { title: string; intro:
                   <span className="relative h-1.5 w-1.5 rounded-full bg-accent" />
                 </div>
                 <div className="border-t border-line pt-5 transition-colors duration-500 group-hover:border-accent/60">
-                  <span className="font-mono text-xs text-accent-dim">{s.number}</span>
-                  <h3 className="mt-2 font-display text-3xl leading-tight text-fg sm:text-4xl">{s.title}</h3>
+                  <div className="flex items-start justify-between gap-6">
+                    <div>
+                      <span className="font-mono text-xs text-accent-dim">{s.number}</span>
+                      <h3 className="mt-2 font-display text-3xl leading-tight text-fg sm:text-4xl">{s.title}</h3>
+                    </div>
+                    {s.image && (
+                      <div className="relative h-24 w-[4.5rem] shrink-0 overflow-hidden bg-surface">
+                        <Image src={s.image} alt="" fill sizes="72px" className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-105" />
+                      </div>
+                    )}
+                  </div>
                   <p className="mt-3 max-w-md text-sm leading-relaxed text-fg-muted/85 sm:text-base">{s.body}</p>
                   {s.href && s.cta && (
                     <Link href={s.href} className="group/l mt-4 inline-flex items-center gap-3 text-sm text-fg">

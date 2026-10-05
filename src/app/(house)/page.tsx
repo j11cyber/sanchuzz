@@ -2,8 +2,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { serializeProduct } from "@/lib/products";
 import { BRANDS, brandForSection, HOUSE_NAME, type StoreSection } from "@/lib/brands";
-import { PHOTOS } from "@/lib/photos";
+import { HERO_VIDEO, HOUSE } from "@/lib/photos";
 import HeroCampaign from "@/components/house/HeroCampaign";
+import Threshold from "@/components/house/Threshold";
 import Process from "@/components/house/Process";
 import Ambient from "@/components/motion/Ambient";
 import ScrollImage from "@/components/motion/ScrollImage";
@@ -14,10 +15,11 @@ import ProductCard from "@/components/ProductCard";
 /**
  * The house homepage, as a campaign.
  *
- * Load: photograph settles, headline words rise one by one, seal turns,
- * motes drift. Scroll: parallax photography, staggered reveals, a pinned
- * process column with lines that grow and pulse, a fill bar that tracks the
- * scroll. Hover: sheen across buttons, hairlines that grow, images that lift.
+ * Load: photograph (or video) settles, headline words rise one by one, the
+ * seal turns, motes drift. Scroll: parallax photography, staggered reveals,
+ * the two-door threshold, a pinned process column with lines that grow and
+ * pulse. Hover: sheen across buttons, hairlines that grow, images that lift,
+ * a cursor that names what it is over.
  */
 export default async function HouseHome() {
   const [featuredRows, articles, cloth, color] = await Promise.all([
@@ -32,7 +34,8 @@ export default async function HouseHome() {
   return (
     <div className="relative">
       <HeroCampaign
-        image={PHOTOS.atelierCheckSuit}
+        image={HOUSE.hero}
+        video={HERO_VIDEO}
         eyebrow="Atelier open · Abuja"
         headline={HOUSE_NAME}
         line="Two labels. One hand. Clothes made in Abuja, and the judgement to wear them well."
@@ -48,8 +51,8 @@ export default async function HouseHome() {
         <Ambient motes={false} />
         <div className="relative mx-auto max-w-[110rem] px-5 py-20 sm:px-8 sm:py-28 lg:px-12">
           <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
-            <Link href={BRANDS.santus.prefix} className="group relative block lg:col-span-8" aria-label="Santus Sabaoth">
-              <ScrollImage src={PHOTOS.windowpaneBowTie} sizes="(min-width: 1024px) 66vw, 100vw" className="aspect-[4/5] bg-surface sm:aspect-[3/4] lg:aspect-[16/11]" parallax={9} zoom={1.1} />
+            <Link href={BRANDS.santus.prefix} data-cursor="Enter" className="group relative block lg:col-span-8" aria-label="Santus Sabaoth">
+              <ScrollImage src={HOUSE.chapterSantus} sizes="(min-width: 1024px) 66vw, 100vw" className="aspect-[4/5] bg-surface sm:aspect-[3/4] lg:aspect-[16/11]" parallax={9} zoom={1.1} />
               <span className="card-line" aria-hidden />
             </Link>
             <div className="lg:col-span-4 lg:self-end lg:pb-4">
@@ -62,7 +65,7 @@ export default async function HouseHome() {
                 measure.
               </Rise>
               <Rise delay={0.42} className="mt-7">
-                <Link href={BRANDS.santus.prefix} className="btn-sheen group relative inline-flex items-center gap-3 overflow-hidden border border-fg/40 px-6 py-3 text-sm text-fg">
+                <Link href={BRANDS.santus.prefix} data-cursor="Enter" className="btn-sheen group relative inline-flex items-center gap-3 overflow-hidden border border-fg/40 px-6 py-3 text-sm text-fg">
                   Enter the atelier
                   <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" strokeWidth="1.2" className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden>
                     <path d="M0 5h14M10 1l4 4-4 4" />
@@ -87,7 +90,7 @@ export default async function HouseHome() {
               to do it with.
             </Rise>
             <Rise delay={0.42} className="mt-7 flex flex-wrap gap-4">
-              <Link href={BRANDS.sartorial.prefix} className="btn-sheen group relative inline-flex items-center gap-3 overflow-hidden border border-fg/40 px-6 py-3 text-sm text-fg">
+              <Link href={BRANDS.sartorial.prefix} data-cursor="Enter" className="btn-sheen group relative inline-flex items-center gap-3 overflow-hidden border border-fg/40 px-6 py-3 text-sm text-fg">
                 Enter the clinic
                 <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" strokeWidth="1.2" className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden>
                   <path d="M0 5h14M10 1l4 4-4 4" />
@@ -98,12 +101,36 @@ export default async function HouseHome() {
               </Link>
             </Rise>
           </div>
-          <Link href={BRANDS.sartorial.prefix} className="group relative order-1 block lg:order-2 lg:col-span-7 lg:col-start-6" aria-label="Sartorial Executive">
-            <ScrollImage src={PHOTOS.darkSuitRedTie} sizes="(min-width: 1024px) 58vw, 100vw" className="aspect-[4/5] bg-surface sm:aspect-[3/4] lg:aspect-[16/11]" parallax={9} zoom={1.1} />
+          <Link href={BRANDS.sartorial.prefix} data-cursor="Enter" className="group relative order-1 block lg:order-2 lg:col-span-7 lg:col-start-6" aria-label="Sartorial Executive">
+            <ScrollImage src={HOUSE.chapterSartorial} sizes="(min-width: 1024px) 58vw, 100vw" className="aspect-[4/5] bg-surface sm:aspect-[3/4] lg:aspect-[16/11]" parallax={9} zoom={1.1} />
             <span className="card-line" aria-hidden />
           </Link>
         </div>
       </section>
+
+      {/* The threshold: choose a door */}
+      <Threshold
+        doors={[
+          {
+            href: BRANDS.santus.prefix,
+            name: "Santus Sabaoth",
+            line: "The maker's own line. Tailoring, kaftans, shoes and bags, cut by one hand.",
+            enter: "Enter the atelier",
+            image: HOUSE.doorSantus,
+            imageActive: HOUSE.doorSantusActive,
+            alt: "Santus Sabaoth, the maker's own line",
+          },
+          {
+            href: BRANDS.sartorial.prefix,
+            name: "Sartorial Executive",
+            line: "The Fashion Clinic. Diagnose. Prescribe. Transform.",
+            enter: "Enter the clinic",
+            image: HOUSE.doorSartorial,
+            imageActive: HOUSE.doorSartorialActive,
+            alt: "Sartorial Executive, The Fashion Clinic",
+          },
+        ]}
+      />
 
       {/* How the house works: the pinned, lit diagram */}
       <section className="relative overflow-hidden border-t border-line">
@@ -112,9 +139,9 @@ export default async function HouseHome() {
           title="How the house works"
           intro="Two labels, one method. The clinic reads the man; the atelier cuts the cloth; the Guide keeps it all in good order for years."
           steps={[
-            { number: "01", title: "Diagnose", body: "Sartorial Executive reads your proportions, your rooms and your position before a single garment is chosen.", href: `${BRANDS.sartorial.prefix}/checkup`, cta: "Start your checkup" },
-            { number: "02", title: "Make", body: "Santus Sabaoth cuts and finishes every piece in the line by hand. Commissions are made the same way.", href: `${BRANDS.santus.prefix}/commission`, cta: "Commission a piece" },
-            { number: "03", title: "Keep", body: "Aftercare comes with every treatment, and the Guide tells you how to look after what you own.", href: "/guide", cta: "Open the Guide" },
+            { number: "01", title: "Diagnose", body: "Sartorial Executive reads your proportions, your rooms and your position before a single garment is chosen.", href: `${BRANDS.sartorial.prefix}/checkup`, cta: "Start your checkup", image: HOUSE.processDiagnose },
+            { number: "02", title: "Make", body: "Santus Sabaoth cuts and finishes every piece in the line by hand. Commissions are made the same way.", href: `${BRANDS.santus.prefix}/commission`, cta: "Commission a piece", image: HOUSE.processMake },
+            { number: "03", title: "Keep", body: "Aftercare comes with every treatment, and the Guide tells you how to look after what you own.", href: "/guide", cta: "Open the Guide", image: HOUSE.processKeep },
           ]}
         />
       </section>
@@ -155,7 +182,7 @@ export default async function HouseHome() {
         <section className="border-t border-line">
           <div className="grid lg:grid-cols-2">
             {color && (
-              <Link href="/daily" className="group relative flex min-h-[50svh] flex-col justify-between overflow-hidden p-8 sm:p-12 lg:p-16" style={{ backgroundColor: color.colorHex ?? "#7A4B2A" }}>
+              <Link href="/daily" data-cursor="View" className="group relative flex min-h-[50svh] flex-col justify-between overflow-hidden p-8 sm:p-12 lg:p-16" style={{ backgroundColor: color.colorHex ?? "#7A4B2A" }}>
                 <span className="text-sm text-black/70 mix-blend-multiply">Colour of the day</span>
                 <div>
                   <Words as="h2" text={color.title} className="font-display text-5xl leading-none text-black/85 mix-blend-multiply sm:text-7xl" />
@@ -166,7 +193,7 @@ export default async function HouseHome() {
               </Link>
             )}
             {cloth && (
-              <Link href="/daily" className="group relative flex min-h-[50svh] items-end overflow-hidden">
+              <Link href="/daily" data-cursor="View" className="group relative flex min-h-[50svh] items-end overflow-hidden">
                 {cloth.imageUrl && <ScrollImage src={cloth.imageUrl} sizes="(min-width: 1024px) 50vw, 100vw" className="absolute inset-0" parallax={8} zoom={1.08} />}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/85 via-deep/20 to-transparent" />
                 <div className="relative p-8 sm:p-12 lg:p-16">
@@ -190,7 +217,7 @@ export default async function HouseHome() {
               </Link>
             </div>
 
-            <Link href={`/guide/${feature.slug}`} className="group mt-12 grid gap-8 lg:grid-cols-12 lg:gap-12">
+            <Link href={`/guide/${feature.slug}`} data-cursor="Read" className="group mt-12 grid gap-8 lg:grid-cols-12 lg:gap-12">
               {feature.coverImage && (
                 <div className="relative lg:col-span-7">
                   <ScrollImage src={feature.coverImage} sizes="(min-width: 1024px) 58vw, 100vw" className="aspect-[16/10] bg-surface" parallax={6} zoom={1.06} />
@@ -208,7 +235,7 @@ export default async function HouseHome() {
                   {feature.excerpt}
                 </Rise>
                 <Rise delay={0.3} className="mt-6">
-                  <span className="group/l inline-flex items-center gap-3 text-sm text-fg">
+                  <span className="inline-flex items-center gap-3 text-sm text-fg">
                     <span className="h-px w-4 bg-fg-muted/40 transition-[width,background-color] duration-300 group-hover:w-8 group-hover:bg-accent" />
                     Read
                   </span>
@@ -234,7 +261,7 @@ export default async function HouseHome() {
 
       {/* Closing frame */}
       <section className="relative overflow-hidden border-t border-line">
-        <ScrollImage src={PHOTOS.blackSuitBrick} sizes="100vw" className="h-[70svh] min-h-[28rem]" parallax={12} zoom={1.1} />
+        <ScrollImage src={HOUSE.closing} sizes="100vw" className="h-[70svh] min-h-[28rem]" parallax={12} zoom={1.1} />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/90 via-deep/30 to-deep/20" />
         <div className="absolute inset-x-0 bottom-0 px-5 pb-12 sm:px-8 sm:pb-16 lg:px-12">
           <Words as="p" text="Dress like the decision has already been made." className="max-w-3xl font-display text-3xl leading-[1.05] text-fg sm:text-5xl lg:text-6xl" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { ViewTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatNaira } from "@/lib/money";
@@ -36,15 +37,31 @@ export default function ProductDetail({ product, brand, relatedProducts = [] }: 
           <div className="snap-row no-scrollbar gap-2 px-5 sm:px-0 lg:hidden" aria-label="Photographs">
             {images.map((src, i) => (
               <div key={i} className="relative aspect-[4/5] w-[86vw] shrink-0 overflow-hidden bg-surface sm:w-[60vw]">
-                <Image src={src} alt={`${product.name}, view ${i + 1}`} fill priority={i === 0} sizes="86vw" className="object-cover" />
+                {i === 0 ? (
+                  <ViewTransition name={`product-${product.id}`} share="product-morph" default="none">
+                    <div className="absolute inset-0 lg:hidden">
+                      <Image src={src} alt={`${product.name}, view 1`} fill priority sizes="86vw" className="object-cover" />
+                    </div>
+                  </ViewTransition>
+                ) : (
+                  <Image src={src} alt={`${product.name}, view ${i + 1}`} fill sizes="86vw" className="object-cover" />
+                )}
               </div>
             ))}
             {images.length === 0 && <div className="flex aspect-[4/5] w-[86vw] items-center justify-center bg-surface text-xs text-fg-muted/40">Photo to follow</div>}
           </div>
           <div className="hidden space-y-6 lg:block">
-            {images.map((src, i) => (
-              <ScrollImage key={i} src={src} alt={`${product.name}, view ${i + 1}`} priority={i === 0} sizes="(min-width: 1024px) 58vw, 100vw" className={i === 0 ? "aspect-[4/5] bg-surface" : "aspect-[4/5] bg-surface"} parallax={5} zoom={1.05} />
-            ))}
+            {images.map((src, i) =>
+              i === 0 ? (
+                <ViewTransition key={i} name={`product-${product.id}-desktop`} share="product-morph" default="none">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-surface">
+                    <Image src={src} alt={`${product.name}, view 1`} fill priority sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover" />
+                  </div>
+                </ViewTransition>
+              ) : (
+                <ScrollImage key={i} src={src} alt={`${product.name}, view ${i + 1}`} sizes="(min-width: 1024px) 58vw, 100vw" className="aspect-[4/5] bg-surface" parallax={5} zoom={1.05} />
+              ),
+            )}
             {images.length === 0 && <div className="flex aspect-[4/5] items-center justify-center bg-surface text-xs text-fg-muted/40">Photo to follow</div>}
           </div>
         </div>

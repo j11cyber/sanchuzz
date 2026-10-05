@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatNaira } from "@/lib/money";
@@ -31,9 +31,13 @@ export default function ProductCard({
 
   return (
     <article className={`pc hover-lift group relative ${className}`}>
-      <Link href={href} className="pc-media relative block aspect-[4/5] overflow-hidden bg-surface" aria-label={product.name}>
+      <Link href={href} data-cursor="View" className="pc-media relative block aspect-[4/5] overflow-hidden bg-surface" aria-label={product.name}>
         {front ? (
-          <Image src={front} alt="" fill priority={priority} sizes={sizes} className="object-cover" />
+          <ViewTransition name={`product-${product.id}`} share="product-morph" default="none">
+            <div className="absolute inset-0">
+              <Image src={front} alt="" fill priority={priority} sizes={sizes} className="object-cover" />
+            </div>
+          </ViewTransition>
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-fg-muted/40">Photo to follow</div>
         )}

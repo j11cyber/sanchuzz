@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { whatsappLink } from "@/lib/contact";
 import { getContactSettings } from "@/lib/site-settings";
-import { PHOTOS } from "@/lib/photos";
+import { SANTUS } from "@/lib/photos";
 import ScrollImage from "@/components/motion/ScrollImage";
 import Words from "@/components/motion/Words";
 import Rise, { RiseGroup, RiseItem } from "@/components/motion/Rise";
@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 };
 
 const CATEGORIES = [
-  { title: "Clothing", body: "Suits, kaftans, agbada and shirting cut to your exact measurements.", image: PHOTOS.windowpaneBowTie },
-  { title: "Shoes", body: "Hand-lasted footwear built on a last made for your foot.", image: PHOTOS.tanOxfords },
-  { title: "Bags", body: "Structured or soft construction, in your choice of leather and hardware.", image: PHOTOS.hangingWarm },
+  { title: "Clothing", body: "Suits, kaftans, agbada and shirting cut to your exact measurements.", image: SANTUS.commissionClothing },
+  { title: "Shoes", body: "Hand-lasted footwear built on a last made for your foot.", image: SANTUS.commissionShoes },
+  { title: "Bags", body: "Structured or soft construction, in your choice of leather and hardware.", image: SANTUS.commissionBags },
 ];
 
 export default async function CommissionPage() {
@@ -25,7 +25,7 @@ export default async function CommissionPage() {
   return (
     <div>
       <section className="relative overflow-hidden">
-        <ScrollImage src={PHOTOS.flatLay} sizes="100vw" priority className="h-[80svh] min-h-[30rem]" parallax={10} zoom={1.1} />
+        <ScrollImage src={SANTUS.commissionHero} sizes="100vw" priority className="h-[80svh] min-h-[30rem]" parallax={10} zoom={1.1} />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/95 via-deep/35 to-deep/15" />
         <div className="absolute inset-x-0 bottom-0 px-5 pb-12 sm:px-8 sm:pb-16 lg:px-12">
           <Rise as="p" className="text-sm text-fg-muted/70">
@@ -67,7 +67,7 @@ export default async function CommissionPage() {
       </section>
 
       <section className="relative overflow-hidden border-t border-line">
-        <ScrollImage src={PHOTOS.atelierCheckSuit} sizes="100vw" className="h-[70svh] min-h-[26rem]" parallax={12} zoom={1.1} />
+        <ScrollImage src={SANTUS.commissionClosing} sizes="100vw" className="h-[70svh] min-h-[26rem]" parallax={12} zoom={1.1} />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/90 via-deep/35 to-deep/20" />
         <div className="absolute inset-x-0 bottom-0 px-5 pb-12 sm:px-8 sm:pb-16 lg:px-12">
           <Words as="h2" text="Start a commission" className="font-display text-4xl leading-[1.02] text-fg sm:text-6xl" />

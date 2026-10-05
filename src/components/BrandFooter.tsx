@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BRANDS, brandHref, HOUSE_NAME, type Brand } from "@/lib/brands";
 import type { ContactSettings } from "@/lib/contact";
+import { HouseWordmark, SantusWordmark, SartorialWordmark } from "@/components/brand/Logo";
 
 /**
  * Footer for every brand. The house footer lists both brands. A brand footer
@@ -24,13 +25,13 @@ export default function BrandFooter({ brand, contact }: { brand: Brand; contact:
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <div className={brand.key === "santus" ? "font-display text-4xl leading-none text-fg" : "font-display text-2xl text-fg"}>
+            <div className="text-fg">
               {brand.key === "santus" ? (
-                <>
-                  Santus <span className="italic">Sabaoth</span>
-                </>
+                <SantusWordmark className="h-10 w-auto" />
+              ) : brand.key === "sartorial" ? (
+                <SartorialWordmark className="h-10 w-auto" />
               ) : (
-                brand.name
+                <HouseWordmark className="h-10 w-auto" />
               )}
             </div>
             {brand.key === "santus" && <div className="mt-2 text-xs text-accent-dim">Made by hand in {contact.location.split(",")[0]}</div>}

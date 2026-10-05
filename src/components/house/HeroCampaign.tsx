@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m, useScroll, useTransform } from "motion/react";
 import { EXPO } from "@/components/motion/Rise";
 import Words from "@/components/motion/Words";
 import Ambient, { usePauseOffscreen } from "@/components/motion/Ambient";
+import { Monogram } from "@/components/brand/Logo";
 import { HOUSE_NAME } from "@/lib/brands";
+import type { HeroVideo } from "@/lib/photos";
 
 const rise = (delay: number) => ({
   initial: { opacity: 0, y: 24 },
@@ -16,14 +18,35 @@ const rise = (delay: number) => ({
 });
 
 /**
+ * Decide whether to play the hero video and which file. Poster only for
+ * reduced motion, Save-Data, 2G/3G, or when no video is configured.
+ */
+function useHeroVideoSource(video: HeroVideo | null | undefined) {
+  const [src, setSrc] = useState<{ mp4: string; webm?: string } | null>(null);
+  useEffect(() => {
+    if (!video) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (conn?.saveData || (conn?.effectiveType && /2g|3g/.test(conn.effectiveType))) return;
+    const mobile = window.matchMedia("(max-width: 767px)").matches;
+    const t = setTimeout(() => setSrc(mobile ? video.mobile : video.desktop), 0);
+    return () => clearTimeout(t);
+  }, [video]);
+  return src;
+}
+
+/**
  * The campaign hero. On load: the photograph settles from a slight zoom and
- * fades in over 1.2s, the eyebrow, headline words, line and links rise one
- * after another, a seal of circular text turns slowly in the corner, warm
- * orbs drift, motes rise, and a floating card breathes at the bottom right.
- * On scroll: the photograph parallaxes and the copy drifts up and fades.
+ * fades in, the eyebrow, headline words, line and links rise one after
+ * another, the monogram seal turns slowly in the corner, warm orbs drift,
+ * motes rise, and a floating card breathes at the bottom right. On scroll:
+ * the picture parallaxes and the copy drifts up and fades. With a video
+ * configured, it plays muted on a loop over the poster photograph and
+ * inherits the same zoom and parallax.
  */
 export default function HeroCampaign({
   image,
+  video,
   eyebrow,
   headline,
   line,
@@ -31,6 +54,7 @@ export default function HeroCampaign({
   card,
 }: {
   image: string;
+  video?: HeroVideo | null;
   eyebrow: string;
   headline: string;
   line: string;
@@ -39,6 +63,8 @@ export default function HeroCampaign({
 }) {
   const ref = useRef<HTMLElement>(null);
   const sealRef = usePauseOffscreen<HTMLDivElement>();
+  const videoSrc = useHeroVideoSource(video);
+  const [videoReady, setVideoReady] = useState(false);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const imgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
   const imgScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
@@ -49,7 +75,7 @@ export default function HeroCampaign({
 
   return (
     <section ref={ref} className="relative h-[100svh] min-h-[36rem] overflow-hidden bg-deep">
-      {/* Photograph: 1.2s fade on load, scale-settle, then scroll parallax */}
+      {/* Picture (and video) share one transform so the motion is identical */}
       <m.div
         className="absolute -inset-[6%] will-change-transform"
         style={{ y: imgY, scale: imgScale }}
@@ -58,12 +84,29 @@ export default function HeroCampaign({
         transition={{ duration: 1.4, ease: "easeOut" }}
       >
         <Image src={image} alt="" fill priority sizes="100vw" className="object-cover" />
+        {videoSrc && (
+          <video
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000"
+            style={{ opacity: videoReady ? 1 : 0 }}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={image}
+            onCanPlay={() => setVideoReady(true)}
+            aria-hidden
+          >
+            {videoSrc.webm && <source src={videoSrc.webm} type="video/webm" />}
+            <source src={videoSrc.mp4} type="video/mp4" />
+          </video>
+        )}
       </m.div>
       <div className="absolute inset-0 bg-gradient-to-t from-deep/95 via-deep/30 to-deep/10" />
       <div className="ray-shimmer absolute inset-0" />
       <Ambient />
 
-      {/* Seal: circular text turning slowly, inner dashed ring turning the other way */}
+      {/* Seal: circular text turning slowly, inner dashed ring turning the other way, the monogram at the centre */}
       <div ref={sealRef} aria-hidden className="pointer-events-none absolute right-5 top-24 h-28 w-28 text-accent sm:right-8 sm:top-28 sm:h-40 sm:w-40 lg:right-12">
         <m.div className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2, delay: 0.6 }}>
           <svg viewBox="0 0 200 200" className="spin-slow absolute inset-0 h-full w-full">
@@ -79,7 +122,7 @@ export default function HeroCampaign({
             <circle cx="100" cy="42" r="2.5" fill="currentColor" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-display text-xl text-fg sm:text-2xl">S</span>
+            <Monogram className="h-[38%] w-[38%]" />
           </div>
         </m.div>
       </div>
@@ -102,7 +145,7 @@ export default function HeroCampaign({
           </m.p>
           <m.div {...rise(0.9)} className="flex gap-4">
             {links.map((l, i) => (
-              <Link key={l.href} href={l.href} className={`btn-sheen group relative inline-flex items-center gap-3 overflow-hidden px-6 py-3 text-sm ${i === 0 ? "bg-fg text-bg" : "border border-fg/40 text-fg"}`}>
+              <Link key={l.href} href={l.href} data-cursor="Enter" className={`btn-sheen group relative inline-flex items-center gap-3 overflow-hidden px-6 py-3 text-sm ${i === 0 ? "bg-fg text-bg" : "border border-fg/40 text-fg"}`}>
                 {l.label}
                 <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" strokeWidth="1.2" className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden>
                   <path d="M0 5h14M10 1l4 4-4 4" />
@@ -115,8 +158,8 @@ export default function HeroCampaign({
 
       {/* Floating card: rises last, then floats, with a glint running round its edge */}
       {card && (
-        <m.div {...rise(1.3)} className="absolute bottom-10 right-5 hidden w-64 lg:bottom-14 lg:right-12 md:block">
-          <Link href={card.href} className="float-soft glass group relative block p-4">
+        <m.div {...rise(1.3)} className="absolute bottom-10 right-5 hidden w-64 md:block lg:bottom-14 lg:right-12">
+          <Link href={card.href} data-cursor="View" className="float-soft glass group relative block p-4">
             <span className="border-glint">
               <span className="border-glint__top" />
               <span className="border-glint__right" />

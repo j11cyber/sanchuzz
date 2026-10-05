@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // React <ViewTransition> for seamless route changes.
+    viewTransition: true,
+  },
   images: {
     remotePatterns: [
       // Placeholder photography until real product photos arrive.

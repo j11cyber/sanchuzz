@@ -53,7 +53,7 @@ export default function Lookbook({ products, basePath }: { products: Product[]; 
         <m.div ref={trackRef} style={{ x }} className="flex h-full items-center gap-6 px-5 will-change-transform sm:gap-10 sm:px-8 lg:gap-16 lg:px-12">
           {products.map((p, i) => (
             <article key={p.id} className="group flex h-[72svh] shrink-0 items-end gap-4 sm:gap-8 lg:h-[76svh]">
-              <Link href={`${basePath}/${p.slug}`} className="relative block h-full w-[70vw] overflow-hidden bg-surface sm:w-[46vw] lg:w-[34vw]" aria-label={p.name}>
+              <Link href={`${basePath}/${p.slug}`} data-cursor="View" className="relative block h-full w-[70vw] overflow-hidden bg-surface sm:w-[46vw] lg:w-[34vw]" aria-label={p.name}>
                 {p.images[0] && (
                   <Image
                     src={p.images[0]}

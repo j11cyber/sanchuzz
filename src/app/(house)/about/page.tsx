@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { BRANDS, HOUSE_NAME } from "@/lib/brands";
 import { getContactSettings } from "@/lib/site-settings";
-import { PHOTOS } from "@/lib/photos";
+import { HOUSE } from "@/lib/photos";
 
 export const metadata: Metadata = {
   title: "About",
@@ -56,10 +56,10 @@ export default async function AboutHousePage() {
 
       <section className="mt-20 grid gap-px bg-line sm:grid-cols-2">
         <div className="relative aspect-[4/5] bg-bg sm:aspect-auto sm:min-h-[70svh]">
-          <Image src={PHOTOS.atelierCheckSuit} alt="The atelier" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
+          <Image src={HOUSE.aboutAtelier} alt="The atelier" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
         </div>
         <div className="relative aspect-[4/5] bg-bg sm:aspect-auto">
-          <Image src={PHOTOS.shawlKnit} alt="" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
+          <Image src={HOUSE.aboutKnit} alt="" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
         </div>
       </section>
 
