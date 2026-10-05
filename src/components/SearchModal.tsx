@@ -46,7 +46,7 @@ function SearchPanel({ close }: { close: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-16 sm:pt-24" role="dialog" aria-modal="true" aria-label="Search">
-      <div className="fixed inset-0 bg-deep/80 backdrop-blur-md" onClick={close} />
+      <div className="fixed inset-0 bg-deep/80" onClick={close} />
 
       <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-line bg-surface shadow-lift">
         <div className="flex items-center border-b border-line px-4 py-3.5 sm:px-6">

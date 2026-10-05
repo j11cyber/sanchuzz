@@ -11,8 +11,14 @@
  * photography on Supabase Storage; keep the slot names.
  */
 
-function unsplash(id: string, w = 2000) {
-  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
+/**
+ * Source size is capped at 1600px and quality 75. next/image resizes from
+ * this for every device; a 2000px/q80 source produced files over 1 MB that
+ * the optimizer passed through unoptimized, which showed up as long image
+ * decode tasks on desktop.
+ */
+function unsplash(id: string, w = 1600) {
+  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=75`;
 }
 
 /* The source pool. Add new photographs here, then point slots at them. */

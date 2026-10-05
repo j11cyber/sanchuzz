@@ -328,7 +328,6 @@ html.has-cursor [data-cursor] * {
   background: #0f0e0c;
   color: #f2ead6;
   transition: transform 0.55s var(--ease-in-out);
-  will-change: transform;
 }
 .intro[data-leaving="true"] {
   transform: translateY(-100%);
@@ -336,18 +335,21 @@ html.has-cursor [data-cursor] * {
 .intro-word {
   font-size: clamp(1.5rem, 4vw, 3rem);
   font-weight: 400;
+  letter-spacing: 0.04em;
   opacity: 0;
+  transform-origin: center;
   animation: intro-word 0.9s var(--ease-out) 0.1s forwards;
 }
+/* Transform and opacity only: the "tracking in" feel comes from a slight
+   horizontal settle rather than animating letter-spacing, which would lay
+   out text on every frame. */
 @keyframes intro-word {
   from {
     opacity: 0;
-    letter-spacing: 0.3em;
-    transform: translateY(0.4em);
+    transform: translateY(0.4em) scaleX(1.12);
   }
   to {
     opacity: 1;
-    letter-spacing: 0.04em;
     transform: none;
   }
 }
@@ -367,7 +369,6 @@ html.intro-lock .rv {
     opacity 0.9s var(--ease-out),
     transform 1.1s var(--ease-out),
     clip-path 1.1s var(--ease-out);
-  will-change: opacity, transform;
 }
 .rv-lines {
   opacity: 0;
@@ -638,10 +639,8 @@ html.intro-lock .rv {
 .threshold-img {
   transition:
     opacity var(--door-time) var(--door-ease),
-    transform calc(var(--door-time) * 1.6) var(--door-ease),
-    filter var(--door-time) var(--door-ease);
+    transform calc(var(--door-time) * 1.6) var(--door-ease);
   transform: scale(1.02);
-  will-change: opacity, transform;
 }
 .threshold-img-active {
   opacity: 0;
@@ -655,7 +654,6 @@ html.intro-lock .rv {
   transform: scale(1);
 }
 .threshold-door[data-state="receding"] .threshold-img {
-  filter: saturate(0.4) brightness(0.55);
   transform: scale(1.02);
 }
 
@@ -663,10 +661,17 @@ html.intro-lock .rv {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(8, 8, 8, 0.82) 0%, rgba(8, 8, 8, 0.35) 40%, rgba(8, 8, 8, 0.05) 70%, transparent 100%);
+}
+/* The receding door darkens with an opacity-only veil instead of a filter. */
+.threshold-dim {
+  position: absolute;
+  inset: 0;
+  background: #0b0a09;
+  opacity: 0;
   transition: opacity var(--door-time) var(--door-ease);
 }
-.threshold-door[data-state="receding"] .threshold-shade {
-  opacity: 0.9;
+.threshold-door[data-state="receding"] .threshold-dim {
+  opacity: 0.6;
 }
 
 .threshold-copy {
@@ -775,14 +780,20 @@ html.intro-lock .rv {
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Every looping animation pauses when its section is off screen
+   (.anim-paused, set by an IntersectionObserver) and when the tab is hidden
+   (html.tab-hidden). */
 .anim-paused,
 .anim-paused *,
 .anim-paused ::before,
-.anim-paused ::after {
+.anim-paused ::after,
+html.tab-hidden *,
+html.tab-hidden ::before,
+html.tab-hidden ::after {
   animation-play-state: paused !important;
 }
 
-/* Slow turning seal */
+/* Slow turning seal (small SVGs; transform animations composite on their own) */
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -790,29 +801,27 @@ html.intro-lock .rv {
 }
 .spin-slow {
   animation: spin 140s linear infinite;
-  will-change: transform;
 }
 .spin-slow-reverse {
   animation: spin 190s linear infinite reverse;
-  will-change: transform;
 }
 
-/* Light that breathes across the hero */
+/* Light that breathes across the hero: a plain translucent gradient whose
+   opacity animates. No blend mode, so it composites as one cheap layer. */
 @keyframes ray-shimmer {
   0%,
   100% {
-    opacity: 0.35;
+    opacity: 0.45;
   }
   50% {
-    opacity: 0.75;
+    opacity: 1;
   }
 }
 .ray-shimmer {
   pointer-events: none;
   background:
-    radial-gradient(60% 50% at 20% 10%, color-mix(in srgb, var(--brand-accent) 18%, transparent), transparent 70%),
-    radial-gradient(40% 60% at 85% 30%, color-mix(in srgb, var(--brand-accent) 10%, transparent), transparent 70%);
-  mix-blend-mode: screen;
+    radial-gradient(60% 50% at 20% 10%, color-mix(in srgb, var(--brand-accent) 14%, transparent), transparent 70%),
+    radial-gradient(40% 60% at 85% 30%, color-mix(in srgb, var(--brand-accent) 8%, transparent), transparent 70%);
   animation: ray-shimmer 9s ease-in-out infinite;
 }
 
@@ -854,13 +863,19 @@ html.intro-lock .rv {
 .breathe {
   animation: breathe 8s ease-in-out infinite;
 }
+/* Frosted card without backdrop-filter: a translucent fill and a soft inner
+   highlight read as glass over a dark photograph at a fraction of the cost. */
 .glass {
-  background: linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)), color-mix(in srgb, var(--brand-deep) 80%, transparent);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    color-mix(in srgb, var(--brand-deep) 88%, transparent);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Drifting orbs and rising motes */
+/* Drifting orbs and rising motes. Transform-only, sized to stay well under
+   a few megabytes of GPU memory on a phone, and contained so they never
+   trigger layout outside their box. */
 @keyframes drift-a {
   to {
     transform: translate(14vw, 10vh) scale(1.12);
@@ -874,36 +889,36 @@ html.intro-lock .rv {
 .orb {
   position: absolute;
   border-radius: 9999px;
-  will-change: transform;
   pointer-events: none;
+  contain: strict;
 }
 .orb-a {
-  width: 90vw;
-  height: 90vw;
-  top: -30vh;
-  left: -20vw;
+  width: min(70vw, 52rem);
+  height: min(70vw, 52rem);
+  top: -24vh;
+  left: -16vw;
   background: radial-gradient(circle, color-mix(in srgb, var(--brand-accent) 22%, transparent), transparent 62%);
   animation: drift-a 46s ease-in-out infinite alternate;
 }
 .orb-b {
-  width: 100vw;
-  height: 100vw;
-  bottom: -40vh;
-  right: -30vw;
+  width: min(80vw, 60rem);
+  height: min(80vw, 60rem);
+  bottom: -30vh;
+  right: -24vw;
   background: radial-gradient(circle, rgba(140, 106, 67, 0.22), transparent 60%);
   animation: drift-b 58s ease-in-out infinite alternate;
 }
 @keyframes mote-rise {
   to {
-    transform: translateY(-50%);
+    transform: translateY(-33.333%);
   }
 }
 @keyframes mote-sway {
   from {
-    margin-left: -12px;
+    transform: translateX(-12px);
   }
   to {
-    margin-left: 12px;
+    transform: translateX(12px);
   }
 }
 .mote-field {
@@ -911,6 +926,7 @@ html.intro-lock .rv {
   inset: 0;
   overflow: hidden;
   opacity: 0.9;
+  contain: strict;
 }
 .mote-layer {
   position: absolute;
@@ -923,10 +939,9 @@ html.intro-lock .rv {
   left: 0;
   right: 0;
   top: 0;
-  height: 200%;
+  height: 150%;
   background-repeat: repeat;
   animation: mote-rise linear infinite;
-  will-change: transform;
 }
 .mote-layer-1::before {
   background-image: radial-gradient(circle, color-mix(in srgb, var(--brand-accent) 90%, white) 0 1px, transparent 1.6px);
@@ -942,16 +957,6 @@ html.intro-lock .rv {
   background-position: 90px 140px;
   animation-duration: 64s;
   opacity: 0.7;
-}
-.mote-layer-3 {
-  animation-duration: 30s;
-}
-.mote-layer-3::before {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 0.8px, transparent 1.4px);
-  background-size: 140px 180px;
-  background-position: 40px 60px;
-  animation-duration: 90s;
-  opacity: 0.5;
 }
 
 /* Diagram: steps rise in sequence, lines grow, a pulse flows down */
@@ -1052,7 +1057,6 @@ html.intro-lock .rv {
   animation-duration: 9s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  will-change: transform;
 }
 .border-glint__top,
 .border-glint__bottom {

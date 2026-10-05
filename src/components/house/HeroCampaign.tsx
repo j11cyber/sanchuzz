@@ -62,7 +62,8 @@ export default function HeroCampaign({
   card?: { href: string; label: string; title: string; image?: string | null };
 }) {
   const ref = useRef<HTMLElement>(null);
-  const sealRef = usePauseOffscreen<HTMLDivElement>();
+  // Every loop in the hero (seal, shimmer, pulse, float, glint, motes) pauses once the hero scrolls away.
+  usePauseOffscreen(ref);
   const videoSrc = useHeroVideoSource(video);
   const [videoReady, setVideoReady] = useState(false);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -107,7 +108,7 @@ export default function HeroCampaign({
       <Ambient />
 
       {/* Seal: circular text turning slowly, inner dashed ring turning the other way, the monogram at the centre */}
-      <div ref={sealRef} aria-hidden className="pointer-events-none absolute right-5 top-24 h-28 w-28 text-accent sm:right-8 sm:top-28 sm:h-40 sm:w-40 lg:right-12">
+      <div aria-hidden className="pointer-events-none absolute right-5 top-24 h-28 w-28 text-accent sm:right-8 sm:top-28 sm:h-40 sm:w-40 lg:right-12">
         <m.div className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2, delay: 0.6 }}>
           <svg viewBox="0 0 200 200" className="spin-slow absolute inset-0 h-full w-full">
             <defs>

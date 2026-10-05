@@ -40,7 +40,7 @@ function Drawer({ section }: { section: StoreSection }) {
 
   return (
     <div className="fixed inset-0 z-50" data-open={isOpen ? "true" : "false"} aria-hidden={!isOpen} style={{ pointerEvents: isOpen ? "auto" : "none" }}>
-      <div className="drawer-backdrop fixed inset-0 bg-deep/70 backdrop-blur-sm" onClick={close} />
+      <div className="drawer-backdrop fixed inset-0 bg-deep/80" onClick={close} />
 
       <aside className="drawer-panel absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-bg" role="dialog" aria-modal="true" aria-label="Your bag">
         <div className="flex items-center justify-between border-b border-line px-6 py-5">

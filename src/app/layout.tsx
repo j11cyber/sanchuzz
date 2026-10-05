@@ -5,6 +5,7 @@ import SmoothScroll from "@/components/motion/SmoothScroll";
 import Intro from "@/components/motion/Intro";
 import MotionProvider from "@/components/motion/MotionProvider";
 import Cursor from "@/components/motion/Cursor";
+import { TabVisibilityPause } from "@/components/motion/Ambient";
 
 export const metadata: Metadata = {
   title: {
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="flex min-h-full flex-col">
         <MotionProvider>
           <SmoothScroll />
+          <TabVisibilityPause />
           <Intro />
           <Cursor />
           {children}

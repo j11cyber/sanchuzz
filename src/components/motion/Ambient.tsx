@@ -1,18 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
-/** Pauses every CSS animation inside the element while it is off screen. */
-export function usePauseOffscreen<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
+/**
+ * Pauses every CSS animation inside an element while it is off screen.
+ * Pass an existing ref to pause a section you already reference, or omit it
+ * and attach the returned ref.
+ */
+export function usePauseOffscreen<T extends HTMLElement>(existing?: RefObject<T | null>) {
+  const own = useRef<T>(null);
+  const ref = existing ?? own;
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(([e]) => el.classList.toggle("anim-paused", !e.isIntersecting), { rootMargin: "80px 0px" });
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [ref]);
   return ref;
+}
+
+/** Pauses every CSS animation on the page while the tab is hidden. Mount once. */
+export function TabVisibilityPause() {
+  useEffect(() => {
+    const update = () => document.documentElement.classList.toggle("tab-hidden", document.hidden);
+    update();
+    document.addEventListener("visibilitychange", update);
+    return () => document.removeEventListener("visibilitychange", update);
+  }, []);
+  return null;
 }
 
 /** True when ambient effects should run at all. Read once on the client. */
@@ -31,8 +47,8 @@ export function useAmbientAllowed() {
 /**
  * Ambient life behind a section: two warm orbs that drift for a minute at a
  * time, and fine gold motes rising slowly, like dust in a shaft of light.
- * Cheap: a handful of elements, transform and opacity only, paused when
- * off screen. Phones get two mote layers instead of three.
+ * Cheap: a handful of elements, transform and opacity only, contained,
+ * paused when off screen. Phones get one mote layer, desktop two.
  */
 export default function Ambient({ motes = true, orbs = true, className = "" }: { motes?: boolean; orbs?: boolean; className?: string }) {
   const ref = usePauseOffscreen<HTMLDivElement>();
@@ -44,14 +60,13 @@ export default function Ambient({ motes = true, orbs = true, className = "" }: {
       {orbs && (
         <>
           <div className="orb orb-a" />
-          <div className="orb orb-b" />
+          <div className="orb orb-b hidden sm:block" />
         </>
       )}
       {motes && (
         <div className="mote-field">
           <div className="mote-layer mote-layer-1" />
-          <div className="mote-layer mote-layer-2" />
-          <div className="mote-layer mote-layer-3 hidden sm:block" />
+          <div className="mote-layer mote-layer-2 hidden sm:block" />
         </div>
       )}
     </div>

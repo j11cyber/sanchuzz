@@ -35,7 +35,7 @@ export default function BookingModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="Book a consultation">
-      <div className="fixed inset-0 bg-deep/80 backdrop-blur-md" onClick={onClose} />
+      <div className="fixed inset-0 bg-deep/80" onClick={onClose} />
       <div className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-line bg-surface shadow-lift sm:rounded-2xl">
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <h3 className="font-display text-xl text-fg">Book a consultation</h3>

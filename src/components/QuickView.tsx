@@ -37,7 +37,7 @@ export default function QuickView({ product, href, onClose }: { product: Product
 
   return (
     <div className={`fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6 ${closing ? "modal-closing" : ""}`} role="dialog" aria-modal="true" aria-label={product.name}>
-      <div className="modal-backdrop fixed inset-0 bg-deep/80 backdrop-blur-sm" onClick={close} />
+      <div className="modal-backdrop fixed inset-0 bg-deep/80" onClick={close} />
       <div className="modal-card relative grid max-h-[94svh] w-full max-w-4xl overflow-y-auto bg-bg sm:grid-cols-2">
         <div className="relative aspect-[4/5] bg-surface sm:aspect-auto sm:min-h-[32rem]">
           {product.images[index] && <Image src={product.images[index]} alt={product.name} fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />}

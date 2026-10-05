@@ -101,6 +101,7 @@ export default function Threshold({ doors }: { doors: [ThresholdDoor, ThresholdD
                 <Image src={door.image} alt="" fill sizes="(min-width: 1024px) 50vw, 100vw" className="threshold-img threshold-img-rest object-cover" />
                 <Image src={door.imageActive} alt="" fill sizes="(min-width: 1024px) 70vw, 100vw" className="threshold-img threshold-img-active object-cover" />
                 <div className="threshold-shade" />
+                <div className="threshold-dim" />
               </div>
 
               <span className="sr-only">{door.alt}</span>

@@ -2,15 +2,18 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { cancelFrame, frame } from "motion";
 import Lenis from "lenis";
 
 /**
- * Lenis smooth scrolling, site-wide.
+ * Lenis smooth scrolling, site-wide, driven by Motion's frame loop.
+ *
+ * One requestAnimationFrame per frame for everything: Lenis, the cursor
+ * springs, scroll-linked images and every Motion animation all tick inside
+ * the same loop, in a fixed order, so nothing fights for the frame.
  *
  * Skipped entirely when the visitor prefers reduced motion. On touch devices
- * Lenis leaves native scrolling alone (syncTouch is off), so phones keep
- * their native feel and nothing is added to the main thread while flicking.
- * Scrolls to the top on route change so page transitions start clean.
+ * Lenis leaves native scrolling alone (syncTouch is off).
  */
 export default function SmoothScroll() {
   const pathname = usePathname();
@@ -23,14 +26,11 @@ export default function SmoothScroll() {
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       syncTouch: false,
+      autoRaf: false,
     });
 
-    let frame = 0;
-    const raf = (time: number) => {
-      lenis.raf(time);
-      frame = requestAnimationFrame(raf);
-    };
-    frame = requestAnimationFrame(raf);
+    const update = ({ timestamp }: { timestamp: number }) => lenis.raf(timestamp);
+    frame.update(update, true);
 
     // Anchor links still work with smooth scroll.
     const onClick = (e: MouseEvent) => {
@@ -46,7 +46,7 @@ export default function SmoothScroll() {
     document.addEventListener("click", onClick);
 
     return () => {
-      cancelAnimationFrame(frame);
+      cancelFrame(update);
       document.removeEventListener("click", onClick);
       lenis.destroy();
     };

@@ -61,8 +61,8 @@ export default function BrandNav() {
   return (
     <header
       style={{ viewTransitionName: "site-header" }}
-      className={`sticky top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
-        scrolled ? "border-line/80 bg-bg/90 backdrop-blur-md" : "border-transparent bg-transparent"
+      className={`sticky top-0 z-40 border-b transition-[background-color,border-color] duration-500 ${
+        scrolled ? "border-line/80 bg-bg/95" : "border-transparent bg-transparent"
       }`}
     >
       <div className="mx-auto flex max-w-[110rem] items-center justify-between gap-4 px-4 py-4 sm:px-8 lg:px-12">

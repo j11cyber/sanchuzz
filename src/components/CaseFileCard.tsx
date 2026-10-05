@@ -61,7 +61,7 @@ export default function CaseFileCard({ caseFile }: { caseFile: CaseFileType }) {
         )}
 
         {/* View Toggle Pill */}
-        <div className="absolute bottom-3 left-3 flex rounded-full border border-charcoal-700/80 bg-charcoal-950/90 p-0.5 backdrop-blur-md">
+        <div className="absolute bottom-3 left-3 flex rounded-full border border-charcoal-700/80 bg-charcoal-950/90 p-0.5">
           <button
             type="button"
             onClick={() => setActiveView("before")}
