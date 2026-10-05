@@ -95,11 +95,26 @@ export const SANTUS = {
   commissionClosing: POOL.atelierCheckSuit,
 } as const;
 
-/** Sartorial Executive (Phase 7 will move its pages onto these). */
+/** Sartorial Executive, The Fashion Clinic. */
 export const SARTORIAL = {
+  /** Landing hero. */
   hero: POOL.darkSuitRedTie,
+  /** Beside "We don't guess. We diagnose." */
   philosophy: POOL.blackSuitBrick,
+  /** The Sartorial Executive statement band. */
   spotlight: POOL.blackSuitStreet,
+  /** Small photographs beside the five protocol steps. */
+  protocol: [POOL.navyButtoning, POOL.flatLay, POOL.windowpaneBowTie, POOL.adjustingJacket, POOL.darkSuitRedTie] as const,
+  /** Checkup launcher band and the checkup page header. */
+  checkup: POOL.adjustingJacket,
+  /** Treatment menu header and service pages without their own image. */
+  treatments: POOL.blackSuitBrick,
+  /** Case files page header. */
+  caseFiles: POOL.blackSuitStreet,
+  /** Booking page. */
+  book: POOL.navyButtoning,
+  /** Closing frame. */
+  closing: POOL.blackSuitStreet,
 } as const;
 
 /** Guide article covers by slug, used by the seed. */

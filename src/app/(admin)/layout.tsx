@@ -6,10 +6,11 @@ const display = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-display",
+  adjustFontFallback: true,
   display: "swap",
 });
 
-const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap", adjustFontFallback: true });
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s · Admin" },

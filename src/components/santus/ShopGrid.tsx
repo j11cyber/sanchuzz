@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -78,7 +78,7 @@ export default function ShopGrid({ products, basePath, showBrands = false }: { p
         </div>
         {showBrands && brands.length > 1 && (
           <div className="snap-row no-scrollbar -mx-1 items-center sm:flex-wrap sm:overflow-visible">
-            <span className="shrink-0 px-3 text-xs text-fg-muted/50">House</span>
+            <span className="shrink-0 px-3 text-xs text-fg-muted/60">House</span>
             <Pill group="brand" active={!brand} onClick={() => setBrand("")}>
               All
             </Pill>
@@ -91,7 +91,7 @@ export default function ShopGrid({ products, basePath, showBrands = false }: { p
         )}
         {sizes.length > 0 && (
           <div className="snap-row no-scrollbar -mx-1 items-center sm:flex-wrap sm:overflow-visible">
-            <span className="shrink-0 px-3 text-xs text-fg-muted/50">Size</span>
+            <span className="shrink-0 px-3 text-xs text-fg-muted/60">Size</span>
             <Pill group="size" active={!size} onClick={() => setSize("")}>
               Any
             </Pill>

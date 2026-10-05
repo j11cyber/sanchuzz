@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -7,6 +6,10 @@ import { getContactSettings } from "@/lib/site-settings";
 import { formatNaira } from "@/lib/money";
 import { BRANDS, brandHref } from "@/lib/brands";
 import { whatsappLink } from "@/lib/contact";
+import { SARTORIAL } from "@/lib/photos";
+import ScrollImage from "@/components/motion/ScrollImage";
+import Words from "@/components/motion/Words";
+import Rise, { RiseGroup, RiseItem } from "@/components/motion/Rise";
 
 const S = BRANDS.sartorial;
 
@@ -22,95 +25,128 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const [service, contact] = await Promise.all([getServiceBySlug(slug), getContactSettings()]);
   if (!service || !service.active) notFound();
 
-  const others = (await getActiveServices()).filter((s) => s.slug !== service.slug);
+  const all = await getActiveServices();
+  const index = all.findIndex((s) => s.slug === service.slug);
+  const others = all.filter((s) => s.slug !== service.slug);
   const deposit = depositFor(service);
+  const balance = service.price - deposit;
+  const wa = whatsappLink(contact.whatsappNumber, `Hello Sartorial Executive, I have a question about ${service.name}.`);
 
   return (
-    <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-      <nav className="text-xs text-fg-muted/50" aria-label="Breadcrumb">
-        <Link href={brandHref(S, "/services")} className="hover:text-accent">
-          Treatments
-        </Link>
-        <span className="mx-2">/</span>
-        <span className="text-fg-muted/80">{service.name}</span>
-      </nav>
+    <div className="mx-auto max-w-[110rem] px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
+      <Rise>
+        <nav className="flex items-center gap-3 text-xs text-fg-muted/60" aria-label="Breadcrumb">
+          <Link href={brandHref(S, "/services")} className="link-line hover:text-fg">
+            Treatments
+          </Link>
+          <span aria-hidden>/</span>
+          <span className="text-fg-muted/80">{service.name}</span>
+        </nav>
+      </Rise>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-        <div>
-          {service.image && (
-            <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-surface">
-              <Image src={service.image} alt={service.name} fill priority sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
+      <div className="mt-8 grid gap-12 lg:grid-cols-12 lg:gap-10">
+        <div className="lg:col-span-7">
+          <Rise as="p" className="font-mono text-xs text-fg-muted/60">
+            {index >= 0 ? `Treatment ${String(index + 1).padStart(2, "0")}` : "Treatment"}
+            {service.duration ? ` · ${service.duration}` : ""}
+          </Rise>
+          <Words as="h1" text={service.name} onLoad delay={0.05} className="mt-3 font-display text-5xl leading-[0.98] text-fg sm:text-7xl" />
+          <Rise as="p" delay={0.3} className="mt-6 max-w-2xl text-lg leading-relaxed text-fg-muted/85">
+            {service.description}
+          </Rise>
+
+          <Rise delay={0.4} className="mt-10">
+            <ScrollImage src={service.image ?? SARTORIAL.treatments} sizes="(min-width: 1024px) 60vw, 100vw" priority className="aspect-[16/10] bg-surface" parallax={8} zoom={1.08} />
+          </Rise>
+
+          <div className="mt-14 grid gap-12 sm:grid-cols-2">
+            <div>
+              <Rise as="h2" className="text-sm text-fg-muted/60">
+                What is included
+              </Rise>
+              <RiseGroup as="ul" stagger={0.06} className="mt-4 divide-y divide-line border-y border-line">
+                {service.features.map((f, i) => (
+                  <RiseItem key={i} as="li" className="flex items-start gap-4 py-3.5 text-base text-fg">
+                    <span className="mt-1 font-mono text-xs text-mark">{String(i + 1).padStart(2, "0")}</span>
+                    <span>{f}</span>
+                  </RiseItem>
+                ))}
+              </RiseGroup>
             </div>
-          )}
-          <h1 className="mt-8 font-display text-4xl text-fg sm:text-5xl">{service.name}</h1>
-          {service.duration && <p className="mt-2 text-sm text-fg-muted/70">{service.duration}</p>}
-          <p className="mt-6 text-base leading-relaxed text-fg-muted/85">{service.description}</p>
-
-          <h2 className="mt-10 font-display text-2xl text-fg">What is included</h2>
-          <ul className="mt-4 space-y-3">
-            {service.features.map((f, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-fg-muted/85">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mark" aria-hidden />
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-
-          <h2 className="mt-10 font-display text-2xl text-fg">Indicated for</h2>
-          <p className="mt-3 text-sm leading-relaxed text-fg-muted/80">{service.bestFor}</p>
+            <div>
+              <Rise as="h2" className="text-sm text-fg-muted/60">
+                Indicated for
+              </Rise>
+              <Rise as="p" delay={0.1} className="mt-4 font-display text-2xl leading-snug text-fg">
+                {service.bestFor}
+              </Rise>
+              <Rise as="p" delay={0.2} className="mt-6 text-sm leading-relaxed text-fg-muted/75">
+                Not certain this is the right treatment? The Executive Checkup reads your situation and recommends one in three minutes.{" "}
+                <Link href={brandHref(S, "/checkup")} className="link-line text-fg">
+                  Start the checkup
+                </Link>
+                .
+              </Rise>
+            </div>
+          </div>
         </div>
 
-        <aside className="h-fit rounded-2xl border border-accent/40 bg-surface p-6 lg:sticky lg:top-24">
-          <div className="font-display text-3xl text-accent">{formatNaira(service.price)}</div>
-          <dl className="mt-4 space-y-2 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-fg-muted/60">Deposit to book ({service.depositPercent}%)</dt>
-              <dd className="text-fg">{formatNaira(deposit)}</dd>
+        <aside className="lg:col-span-4 lg:col-start-9">
+          <Rise delay={0.2} className="border-glint relative overflow-hidden border border-line bg-surface p-6 sm:p-8 lg:sticky lg:top-28">
+            <p className="text-xs text-fg-muted/60">Fee</p>
+            <p className="mt-1 font-display text-4xl text-fg sm:text-5xl">{formatNaira(service.price)}</p>
+            <dl className="mt-6 space-y-3 border-t border-line pt-5 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-fg-muted/60">Deposit to book ({service.depositPercent}%)</dt>
+                <dd className="text-fg">{formatNaira(deposit)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-fg-muted/60">Balance before delivery</dt>
+                <dd className="text-fg">{formatNaira(balance)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-fg-muted/60">Aftercare</dt>
+                <dd className="text-fg">Included</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-fg-muted/60">Where</dt>
+                <dd className="text-right text-fg">{contact.location.split(",")[0]}, or a house call</dd>
+              </div>
+            </dl>
+            <div className="mt-7 flex flex-col gap-3">
+              <Link href={brandHref(S, `/book?service=${encodeURIComponent(service.slug)}`)} className="btn-sheen relative inline-flex items-center justify-center overflow-hidden bg-fg px-6 py-3.5 text-sm font-medium text-bg">
+                Pay deposit · {formatNaira(deposit)}
+              </Link>
+              <a href={wa} target="_blank" rel="noopener noreferrer" className="btn-sheen relative inline-flex items-center justify-center overflow-hidden border border-fg/40 px-6 py-3.5 text-sm text-fg">
+                Talk on WhatsApp
+              </a>
             </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-fg-muted/60">Balance</dt>
-              <dd className="text-fg">Before delivery</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-fg-muted/60">Aftercare</dt>
-              <dd className="text-fg">Included</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-fg-muted/60">Where</dt>
-              <dd className="text-right text-fg">{contact.location}, or a house call</dd>
-            </div>
-          </dl>
-          <Link
-            href={brandHref(S, `/book?service=${encodeURIComponent(service.slug)}`)}
-            className="mt-6 block rounded-full bg-accent py-3.5 text-center text-sm font-semibold text-bg transition hover:bg-accent-soft"
-          >
-            Book this treatment
-          </Link>
-          <a
-            href={whatsappLink(contact.whatsappNumber, `Hello Sartorial Executive, I have a question about ${service.name}.`)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 block text-center text-xs text-fg-muted/70 underline underline-offset-4 hover:text-accent"
-          >
-            Prefer to talk first? Message us on WhatsApp
-          </a>
+            <p className="mt-4 text-center text-xs text-fg-muted/60">We confirm the time with you on WhatsApp after the deposit.</p>
+          </Rise>
         </aside>
       </div>
 
       {others.length > 0 && (
-        <section className="mt-20 border-t border-line pt-12">
-          <h2 className="font-display text-2xl text-fg">Other treatments</h2>
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mt-24 border-t border-line pt-14">
+          <Rise className="flex items-end justify-between gap-6">
+            <h2 className="font-display text-3xl text-fg sm:text-4xl">Other treatments</h2>
+            <Link href={brandHref(S, "/services")} className="link-line text-sm text-fg-muted hover:text-fg">
+              The full menu
+            </Link>
+          </Rise>
+          <RiseGroup as="ul" stagger={0.06} className="mt-8 divide-y divide-line border-y border-line">
             {others.map((s) => (
-              <li key={s.id}>
-                <Link href={brandHref(S, `/services/${s.slug}`)} className="block rounded-xl border border-line bg-surface p-4 transition hover:border-accent/50">
-                  <div className="font-display text-lg text-fg">{s.name}</div>
-                  <div className="mt-1 text-sm text-accent">{formatNaira(s.price)}</div>
-                  {s.duration && <div className="mt-1 text-xs text-fg-muted/60">{s.duration}</div>}
+              <RiseItem key={s.id} as="li">
+                <Link href={brandHref(S, `/services/${s.slug}`)} className="group flex flex-col gap-1 py-5 sm:flex-row sm:items-baseline sm:justify-between">
+                  <span className="font-display text-2xl text-fg transition group-hover:text-accent">{s.name}</span>
+                  <span className="flex items-baseline gap-4 text-sm text-fg-muted/70">
+                    {s.duration && <span>{s.duration}</span>}
+                    <span className="font-display text-xl text-fg">{formatNaira(s.price)}</span>
+                  </span>
                 </Link>
-              </li>
+              </RiseItem>
             ))}
-          </ul>
+          </RiseGroup>
         </section>
       )}
     </div>

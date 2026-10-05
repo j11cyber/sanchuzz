@@ -1,106 +1,79 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getPublishedCaseFiles } from "@/lib/case-files";
-import CaseFileCard from "@/components/CaseFileCard";
-import ScrollReveal from "@/components/ScrollReveal";
+import { BRANDS, brandHref } from "@/lib/brands";
+import { SARTORIAL } from "@/lib/photos";
+import CaseFileDossier from "@/components/clinic/CaseFileDossier";
+import ScrollImage from "@/components/motion/ScrollImage";
+import Words from "@/components/motion/Words";
+import Rise from "@/components/motion/Rise";
+
+const S = BRANDS.sartorial;
 
 export const metadata: Metadata = {
-  title: "Case Files · Clinical Transformations",
+  title: "Case files",
   description:
-    "Explore real style case files from The Fashion Clinic: Baggy Suit Syndrome (#07), Boardroom Invisibility (#12), Weekend-to-Workwear Whiplash (#03), and more.",
+    "Documented cases from The Fashion Clinic, before and after: Baggy Suit Syndrome, Boardroom Invisibility, Weekend-to-Workwear Whiplash. Symptoms, diagnosis, prescription and result.",
 };
 
-export default async function CaseFilesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tag?: string }>;
-}) {
+export default async function CaseFilesPage({ searchParams }: { searchParams: Promise<{ tag?: string }> }) {
   const { tag } = await searchParams;
-  const allCaseFiles = await getPublishedCaseFiles();
-
-  const allTags = Array.from(
-    new Set(allCaseFiles.flatMap((c) => c.tags))
-  );
-
-  const filtered = tag
-    ? allCaseFiles.filter((c) => c.tags.includes(tag))
-    : allCaseFiles;
+  const all = await getPublishedCaseFiles();
+  const tags = Array.from(new Set(all.flatMap((c) => c.tags)));
+  const filtered = tag ? all.filter((c) => c.tags.includes(tag)) : all;
+  const base = brandHref(S, "/case-files");
 
   return (
-    <div className="space-y-16 py-12 sm:space-y-20 sm:py-16">
-      {/* Header */}
-      <section className="mx-auto max-w-7xl px-5 sm:px-8">
-        <ScrollReveal>
-          <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-charcoal-900 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-gold">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            CLINICAL DOSSIERS &middot; PATIENT CASE STUDIES
-          </span>
-          <h1 className="mt-4 font-display text-4xl text-cream sm:text-6xl">
-            Case Files Archive
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-cream-dim/80 sm:text-base">
-            Every man has a style blindspot. Inspect our documented case studies to examine reported symptoms, anatomical diagnoses, tailored prescriptions, and resolved executive outcomes.
-          </p>
-        </ScrollReveal>
-
-        {/* Tag Filters */}
-        <div className="snap-row no-scrollbar mt-8 sm:flex-wrap sm:overflow-visible">
-          <Link
-            href="/sartorial-executive/case-files"
-            className={`shrink-0 rounded-full border px-4 py-1.5 text-xs uppercase tracking-widest transition ${
-              !tag
-                ? "border-gold bg-gold text-charcoal-950 font-semibold"
-                : "border-charcoal-700 text-cream-dim hover:border-gold/60 hover:text-gold"
-            }`}
-          >
-            All Cases ({allCaseFiles.length})
-          </Link>
-          {allTags.map((t) => (
-            <Link
-              key={t}
-              href={`/sartorial-executive/case-files?tag=${encodeURIComponent(t)}`}
-              className={`shrink-0 rounded-full border px-4 py-1.5 text-xs uppercase tracking-widest transition ${
-                tag === t
-                  ? "border-gold bg-gold text-charcoal-950 font-semibold"
-                  : "border-charcoal-700 text-cream-dim hover:border-gold/60 hover:text-gold"
-              }`}
-            >
-              {t}
-            </Link>
-          ))}
+    <div>
+      <section className="mx-auto max-w-[110rem] px-5 pt-16 sm:px-8 sm:pt-24 lg:px-12">
+        <div className="grid gap-8 lg:grid-cols-12">
+          <Words as="h1" text="Case files" onLoad className="font-display text-5xl leading-[0.95] text-fg sm:text-7xl lg:col-span-7" />
+          <Rise as="p" delay={0.3} className="text-base leading-relaxed text-fg-muted/80 lg:col-span-4 lg:col-start-9 lg:pt-4">
+            Real patients, names withheld. Drag across each photograph to see the before and the after. Every file records the symptoms,
+            the diagnosis, the prescription and the result.
+          </Rise>
         </div>
+
+        <Rise delay={0.4} className="mt-12">
+          <ScrollImage src={SARTORIAL.caseFiles} sizes="100vw" priority className="aspect-[16/9] bg-surface sm:aspect-[21/9]" parallax={8} zoom={1.08} />
+        </Rise>
+
+        {tags.length > 0 && (
+          <Rise delay={0.5} className="mt-10 border-y border-line py-4">
+            <nav className="snap-row no-scrollbar items-center gap-x-6 text-sm sm:flex-wrap sm:overflow-visible" aria-label="Filter by symptom">
+              <Link href={base} className={`shrink-0 transition ${!tag ? "text-fg" : "text-fg-muted/60 hover:text-fg"}`} aria-current={!tag ? "page" : undefined}>
+                All cases <span className="font-mono text-xs text-fg-muted/60">{all.length}</span>
+              </Link>
+              {tags.map((t) => (
+                <Link key={t} href={`${base}?tag=${encodeURIComponent(t)}`} className={`shrink-0 transition ${tag === t ? "text-fg" : "text-fg-muted/60 hover:text-fg"}`} aria-current={tag === t ? "page" : undefined}>
+                  {t}
+                </Link>
+              ))}
+            </nav>
+          </Rise>
+        )}
       </section>
 
-      {/* Case Files Grid */}
-      <section className="mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((caseFile) => (
-            <CaseFileCard key={caseFile.id} caseFile={caseFile} />
-          ))}
-        </div>
+      <section className="mx-auto max-w-[110rem] space-y-24 px-5 py-20 sm:space-y-32 sm:px-8 sm:py-28 lg:px-12">
+        {filtered.length === 0 && <p className="text-sm text-fg-muted/70">No case files under that symptom yet.</p>}
+        {filtered.map((cf, i) => (
+          <CaseFileDossier key={cf.id} caseFile={cf} flip={i % 2 === 1} level="h2" />
+        ))}
       </section>
 
-      {/* Diagnostic CTA */}
-      <section className="mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-navy-950 via-charcoal-900 to-navy-950 p-8 sm:p-12 text-center">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">
-            Recognize Any of These Symptoms?
-          </span>
-          <h2 className="mt-3 font-display text-3xl text-cream">
-            Get Your Own Style Diagnosis
-          </h2>
-          <p className="mt-3 max-w-lg mx-auto text-xs text-cream-dim/75">
-            Take our 3-minute interactive checkup to formulate your personalized Patient File and prescription.
-          </p>
-          <div className="mt-6">
-            <Link
-              href="/sartorial-executive/checkup"
-              className="rounded-full bg-emerald-500 px-8 py-3.5 text-xs font-bold text-charcoal-950 shadow-rx transition hover:bg-emerald-400"
-            >
-              Start Your Executive Checkup &rarr;
-            </Link>
+      <section className="mx-auto max-w-[110rem] border-t border-line px-5 py-20 sm:px-8 sm:py-24 lg:px-12">
+        <Rise className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-end">
+          <div className="max-w-2xl">
+            <p className="text-sm text-fg-muted/60">Recognise any of these symptoms?</p>
+            <h2 className="mt-3 font-display text-3xl leading-tight text-fg sm:text-5xl">Open your own file.</h2>
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-fg-muted/75">
+              The Executive Checkup takes three minutes and ends with a Patient File written for you, with a recommended treatment.
+            </p>
           </div>
-        </div>
+          <Link href={brandHref(S, "/checkup")} className="btn-sheen relative inline-flex items-center overflow-hidden bg-fg px-6 py-3 text-sm font-medium text-bg">
+            Start your checkup
+          </Link>
+        </Rise>
       </section>
     </div>
   );

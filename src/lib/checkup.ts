@@ -11,6 +11,8 @@ export type CheckupFormData = {
   colorPreference: string;
   fitProblem: string;
   transformationGoal: string;
+  /** Budget band chosen in the checkup, stored with the answers. */
+  budgetBand?: string;
 };
 
 export type PatientFileResult = {

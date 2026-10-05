@@ -13,10 +13,11 @@ const display = Cormorant_Garamond({
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-display",
+  adjustFontFallback: true,
   display: "swap",
 });
 
-const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap", adjustFontFallback: true });
 
 export const metadata: Metadata = {
   title: { default: HOUSE_NAME, template: `%s · ${HOUSE_NAME}` },

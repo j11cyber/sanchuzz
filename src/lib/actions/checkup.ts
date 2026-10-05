@@ -31,6 +31,7 @@ export async function submitCheckupAction(raw: CheckupFormData): Promise<Patient
     colorPreference: clean(raw.colorPreference),
     fitProblem: clean(raw.fitProblem, 60),
     transformationGoal: clean(raw.transformationGoal, 60),
+    budgetBand: clean(raw.budgetBand, 60) || undefined,
   };
 
   if (!data.name || !data.email || !data.phone) {

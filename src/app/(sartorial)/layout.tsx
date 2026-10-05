@@ -8,10 +8,11 @@ import SearchModal from "@/components/SearchModal";
 import { BRANDS } from "@/lib/brands";
 import { getContactSettings } from "@/lib/site-settings";
 
-const display = Playfair_Display({ subsets: ["latin"], style: ["normal", "italic"], variable: "--font-display", display: "swap" });
-const body = Montserrat({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const display = Playfair_Display({ subsets: ["latin"], style: ["normal", "italic"], variable: "--font-display",
+  adjustFontFallback: true, display: "swap" });
+const body = Montserrat({ subsets: ["latin"], variable: "--font-body", display: "swap", adjustFontFallback: true });
 // Typewriter face, used only for case file numbers and prescription stamps.
-const mono = Courier_Prime({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-mono", display: "swap" });
+const mono = Courier_Prime({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-mono", display: "swap", adjustFontFallback: true });
 
 export const metadata: Metadata = {
   title: { default: `${BRANDS.sartorial.name} · The Fashion Clinic`, template: `%s · ${BRANDS.sartorial.name}` },

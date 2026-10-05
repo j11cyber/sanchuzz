@@ -113,7 +113,7 @@ export default function BrandFooter({ brand, contact }: { brand: Brand; contact:
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-2 border-t border-line pt-6 text-xs text-fg-muted/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-2 border-t border-line pt-6 text-xs text-fg-muted/60 sm:flex-row sm:items-center sm:justify-between">
           <span>
             &copy; {new Date().getFullYear()} {HOUSE_NAME}
           </span>

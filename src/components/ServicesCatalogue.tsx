@@ -2,104 +2,120 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { m } from "motion/react";
 import { formatNaira } from "@/lib/money";
 import type { ServiceItemType } from "@/lib/services";
 import { depositOf } from "@/lib/booking-options";
 import { BRANDS, brandHref } from "@/lib/brands";
-import type { ContactSettings } from "@/lib/contact";
+import { whatsappLink, type ContactSettings } from "@/lib/contact";
+import { EXPO } from "@/components/motion/Rise";
 import BookingModal from "@/components/BookingModal";
 
 const S = BRANDS.sartorial;
 
+/**
+ * The treatment menu. Each treatment is a row like a line on a consultation
+ * card: name, duration, fee, deposit, what is included, and two ways to
+ * proceed. The hairline above each row grows on hover.
+ */
 export default function ServicesCatalogue({
   services,
   contact,
   showHeading = true,
+  level = "h3",
 }: {
   services: ServiceItemType[];
   contact: ContactSettings;
   showHeading?: boolean;
+  /** Heading level for each treatment name, so the page outline stays in order. */
+  level?: "h2" | "h3";
 }) {
-  const [selectedServiceSlug, setSelectedServiceSlug] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const Heading = level;
   const bookable = services.map((s) => ({ slug: s.slug, name: s.name, price: s.price, depositPercent: s.depositPercent }));
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-8">
+    <div className="mx-auto max-w-[110rem] px-5 sm:px-8 lg:px-12">
       {showHeading && (
-        <div className="max-w-2xl">
-          <h2 className="font-display text-3xl text-fg sm:text-4xl">Treatments</h2>
-          <p className="mt-4 text-sm leading-relaxed text-fg-muted/75">
-            Five interventions, from a thirty-minute diagnosis to a thirty-day transformation. A deposit books your place.
-          </p>
+        <div className="flex items-end justify-between gap-6">
+          <h2 className="font-display text-4xl text-fg sm:text-6xl">Treatments</h2>
+          <Link href={brandHref(S, "/services")} className="link-line text-sm text-fg-muted hover:text-fg">
+            The full menu
+          </Link>
         </div>
       )}
 
-      <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {services.map((service, index) => (
-          <article
-            key={service.id}
-            id={service.slug}
-            className={`flex flex-col justify-between rounded-2xl border bg-surface p-6 ${index === 3 ? "border-accent/50 lg:col-span-2" : "border-line"}`}
-          >
-            <div>
-              <div className="flex items-start justify-between gap-4">
-                <span className="text-xs text-fg-muted/60">{service.duration || "By arrangement"}</span>
-                <div className="text-right">
-                  <div className="font-display text-xl text-accent">{formatNaira(service.price)}</div>
-                  <div className="text-xs text-fg-muted/60">
-                    {formatNaira(depositOf(service))} to book
+      <ol className={showHeading ? "mt-12" : ""}>
+        {services.map((service, i) => {
+          const deposit = depositOf(service);
+          return (
+            <m.li
+              key={service.id}
+              id={service.slug}
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.75, ease: EXPO, delay: Math.min(i, 4) * 0.06 }}
+              className="group relative border-t border-line py-8 last:border-b sm:py-10"
+            >
+              <span className="card-line" aria-hidden />
+              <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
+                <div className="lg:col-span-5">
+                  <div className="flex items-baseline gap-4">
+                    <span className="font-mono text-xs text-fg-muted/60">{String(i + 1).padStart(2, "0")}</span>
+                    <Heading className="font-display text-3xl leading-tight text-fg sm:text-4xl">
+                      <Link href={brandHref(S, `/services/${service.slug}`)} className="transition hover:text-accent">
+                        {service.name}
+                      </Link>
+                    </Heading>
+                  </div>
+                  <p className="mt-2 pl-8 text-sm text-fg-muted/60">{service.duration}</p>
+                  <p className="mt-4 pl-8 text-sm leading-relaxed text-fg-muted/85">{service.description}</p>
+                </div>
+
+                <div className="lg:col-span-4 lg:pt-1">
+                  <ul className="space-y-1.5 text-sm text-fg-muted/85">
+                    {service.features.map((f, j) => (
+                      <li key={j} className="flex items-start gap-2.5">
+                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-mark" aria-hidden />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 text-xs text-fg-muted/60">
+                    <span className="text-accent">Indicated for</span> {service.bestFor}
+                  </p>
+                </div>
+
+                <div className="flex flex-col justify-between gap-5 lg:col-span-3 lg:items-end lg:text-right">
+                  <dl className="text-sm">
+                    <dd className="font-display text-3xl text-fg">{formatNaira(service.price)}</dd>
+                    <dt className="sr-only">Fee</dt>
+                    <dd className="mt-1 text-fg-muted/70">
+                      {formatNaira(deposit)} deposit · balance before delivery
+                    </dd>
+                  </dl>
+                  <div className="flex flex-wrap gap-3 lg:justify-end">
+                    <button type="button" onClick={() => setSelected(service.slug)} className="btn-sheen relative inline-flex items-center overflow-hidden bg-fg px-5 py-2.5 text-sm font-medium text-bg">
+                      Pay deposit
+                    </button>
+                    <a
+                      href={whatsappLink(contact.whatsappNumber, `Hello Sartorial Executive, I would like to talk about ${service.name}.`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-sheen relative inline-flex items-center overflow-hidden border border-fg/40 px-5 py-2.5 text-sm text-fg"
+                    >
+                      Talk on WhatsApp
+                    </a>
                   </div>
                 </div>
               </div>
+            </m.li>
+          );
+        })}
+      </ol>
 
-              <h3 className="mt-4 font-display text-2xl text-fg">
-                <Link href={brandHref(S, `/services/${service.slug}`)} className="hover:text-accent">
-                  {service.name}
-                </Link>
-              </h3>
-
-              <p className="mt-3 text-sm leading-relaxed text-fg-muted/80">{service.description}</p>
-
-              <div className="mt-6 border-t border-line pt-4">
-                <div className="text-xs text-fg-muted/50">Included</div>
-                <ul className="mt-2.5 space-y-2">
-                  {service.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-fg-muted/80">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mark" aria-hidden />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="mt-5 rounded-xl border border-line bg-bg/70 p-3">
-                <div className="text-xs text-accent">Indicated for</div>
-                <p className="mt-1 text-sm text-fg-muted/70">{service.bestFor}</p>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-line/60 pt-4">
-              <button
-                type="button"
-                onClick={() => setSelectedServiceSlug(service.slug)}
-                className="flex-1 rounded-full bg-accent py-3 text-center text-sm font-semibold text-bg transition hover:bg-accent-soft"
-              >
-                Book this treatment
-              </button>
-              <Link
-                href={brandHref(S, `/services/${service.slug}`)}
-                className="rounded-full border border-line px-4 py-3 text-sm text-fg-muted transition hover:border-accent hover:text-accent"
-              >
-                Details
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {selectedServiceSlug && (
-        <BookingModal isOpen onClose={() => setSelectedServiceSlug(null)} services={bookable} contact={contact} initialServiceSlug={selectedServiceSlug} />
-      )}
+      {selected && <BookingModal isOpen onClose={() => setSelected(null)} services={bookable} contact={contact} initialServiceSlug={selected} />}
     </div>
   );
 }
